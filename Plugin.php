@@ -102,12 +102,12 @@ class Plugin extends PluginBase
     {
         return [
             'settings' => [
-                'label' => 'Dashboard for Shopaholic',
+                'label' => 'Dashboard',
                 'description' => 'Cost price type for the Profit metric',
-                'category' => 'Shopaholic',
+                'category' => 'lovata.shopaholic::lang.tab.settings',
                 'icon' => 'icon-chart-bar',
                 'class' => Settings::class,
-                'order' => 500,
+                'order' => 510,
                 'permissions' => ['logingrupa.dashboardshopaholic.view_profit'],
             ],
         ];
