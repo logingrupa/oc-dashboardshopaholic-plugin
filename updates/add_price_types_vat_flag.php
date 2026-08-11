@@ -1,8 +1,8 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
-use Schema;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
+use Schema;
 
 /**
  * Add price_includes_vat to Shopaholic price types. Drives the Profit metric:
@@ -10,8 +10,8 @@ use October\Rain\Database\Updates\Migration;
  */
 class AddPriceTypesVatFlag extends Migration
 {
-    const TABLE = 'lovata_shopaholic_price_types';
-    const COLUMN = 'price_includes_vat';
+    public const TABLE = 'lovata_shopaholic_price_types';
+    public const COLUMN = 'price_includes_vat';
 
     public function up(): void
     {

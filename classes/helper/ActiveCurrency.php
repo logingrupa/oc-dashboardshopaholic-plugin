@@ -9,8 +9,8 @@ use Db;
  */
 class ActiveCurrency
 {
-    const CURRENCY_TABLE = 'lovata_shopaholic_currency';
-    const FALLBACK_CODE = 'EUR';
+    public const CURRENCY_TABLE = 'lovata_shopaholic_currency';
+    public const FALLBACK_CODE = 'EUR';
 
     public static function code(): string
     {

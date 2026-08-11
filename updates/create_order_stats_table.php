@@ -1,15 +1,15 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
-use Schema;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
+use Schema;
 
 /**
  * Reporting fact table: one row per order with promo-processed totals.
  */
 class CreateOrderStatsTable extends Migration
 {
-    const TABLE = 'logingrupa_dashboardshopaholic_order_stats';
+    public const TABLE = 'logingrupa_dashboardshopaholic_order_stats';
 
     public function up()
     {

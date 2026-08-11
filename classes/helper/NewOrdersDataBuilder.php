@@ -1,8 +1,8 @@
 <?php namespace Logingrupa\DashboardShopaholic\Classes\Helper;
 
-use Db;
 use Backend;
 use Carbon\Carbon;
+use Db;
 use SystemException;
 
 /**
@@ -12,12 +12,12 @@ use SystemException;
  */
 class NewOrdersDataBuilder
 {
-    const ORDERS_TABLE = 'lovata_orders_shopaholic_orders';
-    const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
-    const PAYMENT_METHODS_TABLE = 'lovata_orders_shopaholic_payment_methods';
+    public const ORDERS_TABLE = 'lovata_orders_shopaholic_orders';
+    public const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
+    public const PAYMENT_METHODS_TABLE = 'lovata_orders_shopaholic_payment_methods';
 
-    const MIN_LIMIT = 1;
-    const MAX_LIMIT = 50;
+    public const MIN_LIMIT = 1;
+    public const MAX_LIMIT = 50;
 
     /**
      * @return array{orders: array, currency: string}

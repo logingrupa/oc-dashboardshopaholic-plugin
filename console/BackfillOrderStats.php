@@ -1,12 +1,12 @@
 <?php namespace Logingrupa\DashboardShopaholic\Console;
 
-use ReflectionProperty;
-use Throwable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Lovata\OrdersShopaholic\Models\Order;
-use Lovata\OrdersShopaholic\Classes\PromoMechanism\OrderPromoMechanismProcessor;
 use Logingrupa\DashboardShopaholic\Classes\Helper\OrderStatWriter;
+use Lovata\OrdersShopaholic\Classes\PromoMechanism\OrderPromoMechanismProcessor;
+use Lovata\OrdersShopaholic\Models\Order;
+use ReflectionProperty;
+use Throwable;
 
 /**
  * BackfillOrderStats recomputes the reporting row for every order.
@@ -14,7 +14,7 @@ use Logingrupa\DashboardShopaholic\Classes\Helper\OrderStatWriter;
  */
 class BackfillOrderStats extends Command
 {
-    const MAX_FAILURES = 20;
+    public const MAX_FAILURES = 20;
 
     /**
      * @var string signature

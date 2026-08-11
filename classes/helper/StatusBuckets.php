@@ -10,26 +10,26 @@ use SystemException;
  */
 class StatusBuckets
 {
-    const UNPROCESSED = 'unprocessed';
-    const PROCESSING = 'processing';
-    const SHIPPED = 'shipped';
-    const CANCELED = 'canceled';
+    public const UNPROCESSED = 'unprocessed';
+    public const PROCESSING = 'processing';
+    public const SHIPPED = 'shipped';
+    public const CANCELED = 'canceled';
 
-    const BUCKET_LIST = [
+    public const BUCKET_LIST = [
         self::UNPROCESSED,
         self::PROCESSING,
         self::SHIPPED,
         self::CANCELED,
     ];
 
-    const STATUS_CODE_MAP = [
+    public const STATUS_CODE_MAP = [
         self::UNPROCESSED => ['new', 'new-payment-received', 'new-payment-error', 'new-payment-canceled'],
         self::PROCESSING => ['in_progress'],
         self::SHIPPED => ['sent', 'complete'],
         self::CANCELED => ['canceled'],
     ];
 
-    const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';
+    public const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';
 
     /**
      * @return int[] status IDs belonging to the bucket

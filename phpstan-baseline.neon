@@ -1,0 +1,271 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot access property \$isNested on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Cannot access property \$model on mixed\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: Plugin.php
+
+		-
+			message: '#^Cannot call method addColumns\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Cannot call method addFields\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Cannot call method getController\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: Plugin.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Plugin\:\:pluginDetails\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Plugin\:\:registerPermissions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Plugin\:\:registerReportWidgets\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Plugin\:\:registerSettings\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Property Logingrupa\\DashboardShopaholic\\Plugin\:\:\$require type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Plugin.php
+
+		-
+			message: '#^Binary operation "\." between ''profit_'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable\:\:hasAccess\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 3
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Classes\\DataSource\\OrdersReportDataSource\:\:currencyFormatOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function trans expects array\<string, bool\|float\|int\|string\|null\>, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Property Dashboard\\Classes\\ReportFetchData\:\:\$orderRule \(Dashboard\\Classes\\ReportDataOrderRule\) on left side of \?\?\= is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: classes/datasource/OrdersReportDataSource.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$property\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$total_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Binary operation "\." between mixed and '' '' results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Binary operation "\." between non\-falsy\-string and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot access offset ''email'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot access offset ''last_name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot cast mixed to float\.$#'
+			identifier: cast.double
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 4
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Classes\\Helper\\NewOrdersDataBuilder\:\:build\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Classes\\Helper\\NewOrdersDataBuilder\:\:makeOrderRow\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Parameter \#1 \$time of static method Carbon\\Carbon\:\:parse\(\) expects Carbon\\Month\|Carbon\\WeekDay\|DateTimeInterface\|float\|int\|string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/helper/NewOrdersDataBuilder.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: classes/helper/StatusBuckets.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Binary operation "\." between ''DashboardShopaholic…'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Binary operation "\." between ''Order '' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Parameter \#1 \$obOrder of static method Logingrupa\\DashboardShopaholic\\Classes\\Helper\\OrderStatWriter\:\:write\(\) expects Lovata\\OrdersShopaholic\\Models\\Order, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Relation ''order_position'' is not found in Lovata\\OrdersShopaholic\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Relation ''order_promo_mechanism'' is not found in Lovata\\OrdersShopaholic\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: console/BackfillOrderStats.php
+
+		-
+			message: '#^Property Logingrupa\\DashboardShopaholic\\Models\\OrderStat\:\:\$rules has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: models/OrderStat.php
+
+		-
+			message: '#^Method Logingrupa\\DashboardShopaholic\\Models\\Settings\:\:getCostPriceTypeIdOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: models/Settings.php
+
+		-
+			message: '#^Property Logingrupa\\DashboardShopaholic\\Models\\Settings\:\:\$settingsCode has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: models/Settings.php
+
+		-
+			message: '#^Property Logingrupa\\DashboardShopaholic\\Models\\Settings\:\:\$settingsFields has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: models/Settings.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: vuecomponents/NewOrdersList.php

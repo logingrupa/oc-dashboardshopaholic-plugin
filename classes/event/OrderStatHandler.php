@@ -1,11 +1,11 @@
 <?php namespace Logingrupa\DashboardShopaholic\Classes\Event;
 
-use Throwable;
 use Illuminate\Support\Facades\Log;
+use Logingrupa\DashboardShopaholic\Classes\Helper\OrderStatWriter;
+use Lovata\OrdersShopaholic\Classes\Processor\OrderProcessor;
 use Lovata\OrdersShopaholic\Models\Order;
 use Lovata\OrdersShopaholic\Models\OrderPosition;
-use Lovata\OrdersShopaholic\Classes\Processor\OrderProcessor;
-use Logingrupa\DashboardShopaholic\Classes\Helper\OrderStatWriter;
+use Throwable;
 
 /**
  * OrderStatHandler keeps the order stat table in sync with orders.

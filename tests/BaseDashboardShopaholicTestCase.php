@@ -1,10 +1,10 @@
 <?php
 
 use Carbon\Carbon;
+use Dashboard\Classes\ReportFetchData;
 use Illuminate\Support\Facades\DB as Db;
 use Illuminate\Support\Facades\Schema;
 use October\Rain\Database\Schema\Blueprint;
-use Dashboard\Classes\ReportFetchData;
 use System\Models\SettingModel;
 
 /**
@@ -17,7 +17,7 @@ use System\Models\SettingModel;
  */
 abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
 {
-    const OFFER_TYPE = 'Lovata\Shopaholic\Models\Offer';
+    public const OFFER_TYPE = 'Lovata\Shopaholic\Models\Offer';
 
     protected $autoMigrate = false;
 
@@ -54,8 +54,8 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
         require_once __DIR__.'/../updates/create_order_stats_table.php';
         require_once __DIR__.'/../updates/add_order_positions_order_id_index.php';
 
-        (new Logingrupa\DashboardShopaholic\Updates\CreateOrderStatsTable)->up();
-        (new Logingrupa\DashboardShopaholic\Updates\AddOrderPositionsOrderIdIndex)->up();
+        (new Logingrupa\DashboardShopaholic\Updates\CreateOrderStatsTable())->up();
+        (new Logingrupa\DashboardShopaholic\Updates\AddOrderPositionsOrderIdIndex())->up();
     }
 
     protected function createLovataStubTables(): void
@@ -210,7 +210,7 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
      */
     protected function makeFetchData(string $sDimensionCode, array $arMetricCodeList, Carbon $obDateStart, Carbon $obDateEnd): ReportFetchData
     {
-        $obData = new ReportFetchData;
+        $obData = new ReportFetchData();
         $obData->dimensionCode = $sDimensionCode;
         $obData->metricCodes = $arMetricCodeList;
         $obData->metricsConfiguration = [];

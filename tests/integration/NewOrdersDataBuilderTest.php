@@ -1,7 +1,7 @@
 <?php
 
-use SystemException as CoreSystemException;
 use Logingrupa\DashboardShopaholic\Classes\Helper\NewOrdersDataBuilder;
+use SystemException as CoreSystemException;
 
 class NewOrdersDataBuilderTest extends BaseDashboardShopaholicTestCase
 {

@@ -1,0 +1,18 @@
+includes:
+    - ../../../vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 10
+    paths:
+        - classes
+        - models
+        - console
+        - vuecomponents
+        - Plugin.php
+    excludePaths:
+        - tests
+        - updates
+        - lang
+        - vuecomponents/neworderslist
+    tmpDir: ../../../storage/temp/phpstan/dashboardshopaholic

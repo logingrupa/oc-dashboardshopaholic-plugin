@@ -1,9 +1,9 @@
 <?php namespace Logingrupa\DashboardShopaholic\Classes\Helper;
 
-use SystemException;
-use Lovata\OrdersShopaholic\Models\Order;
-use Lovata\OrdersShopaholic\Classes\PromoMechanism\OrderPromoMechanismProcessor;
 use Logingrupa\DashboardShopaholic\Models\OrderStat;
+use Lovata\OrdersShopaholic\Classes\PromoMechanism\OrderPromoMechanismProcessor;
+use Lovata\OrdersShopaholic\Models\Order;
+use SystemException;
 
 /**
  * OrderStatWriter computes and upserts the reporting row for one order.

@@ -1,21 +1,21 @@
 <?php namespace Logingrupa\DashboardShopaholic\Classes\DataSource;
 
-use Db;
 use Backend;
 use BackendAuth;
-use SystemException;
-use Illuminate\Database\Query\Builder;
 use Dashboard\Classes\ReportData;
 use Dashboard\Classes\ReportDataOrderRule;
+use Dashboard\Classes\ReportDataQueryBuilder;
 use Dashboard\Classes\ReportDataSourceBase;
 use Dashboard\Classes\ReportDimension;
 use Dashboard\Classes\ReportFetchData;
 use Dashboard\Classes\ReportFetchDataResult;
 use Dashboard\Classes\ReportMetric;
-use Dashboard\Classes\ReportDataQueryBuilder;
+use Db;
+use Illuminate\Database\Query\Builder;
 use Logingrupa\DashboardShopaholic\Classes\Helper\ActiveCurrency;
 use Logingrupa\DashboardShopaholic\Classes\Helper\StatusBuckets;
 use Logingrupa\DashboardShopaholic\Models\Settings;
+use SystemException;
 
 /**
  * OrdersReportDataSource feeds the October v4 dashboard widgets with
@@ -28,31 +28,31 @@ use Logingrupa\DashboardShopaholic\Models\Settings;
  */
 class OrdersReportDataSource extends ReportDataSourceBase
 {
-    const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
-    const ORDERS_TABLE = 'lovata_orders_shopaholic_orders';
-    const POSITIONS_TABLE = 'lovata_orders_shopaholic_order_positions';
-    const PRICES_TABLE = 'lovata_shopaholic_prices';
-    const PRICE_TYPES_TABLE = 'lovata_shopaholic_price_types';
-    const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';
-    const PAYMENT_METHODS_TABLE = 'lovata_orders_shopaholic_payment_methods';
+    public const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
+    public const ORDERS_TABLE = 'lovata_orders_shopaholic_orders';
+    public const POSITIONS_TABLE = 'lovata_orders_shopaholic_order_positions';
+    public const PRICES_TABLE = 'lovata_shopaholic_prices';
+    public const PRICE_TYPES_TABLE = 'lovata_shopaholic_price_types';
+    public const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';
+    public const PAYMENT_METHODS_TABLE = 'lovata_orders_shopaholic_payment_methods';
 
-    const DIMENSION_STATUS = 'status';
-    const DIMENSION_PAYMENT_METHOD = 'payment_method';
+    public const DIMENSION_STATUS = 'status';
+    public const DIMENSION_PAYMENT_METHOD = 'payment_method';
 
-    const METRIC_ORDERS_COUNT = 'orders_count';
-    const METRIC_TURNOVER = 'turnover';
-    const METRIC_PROFIT = 'profit';
+    public const METRIC_ORDERS_COUNT = 'orders_count';
+    public const METRIC_TURNOVER = 'turnover';
+    public const METRIC_PROFIT = 'profit';
 
-    const BUCKET_DIMENSION_MAP = [
+    public const BUCKET_DIMENSION_MAP = [
         'indicator@orders_unprocessed' => StatusBuckets::UNPROCESSED,
         'indicator@orders_processing' => StatusBuckets::PROCESSING,
         'indicator@orders_shipped' => StatusBuckets::SHIPPED,
         'indicator@orders_canceled' => StatusBuckets::CANCELED,
     ];
 
-    const LANG = 'logingrupa.dashboardshopaholic::lang.';
+    public const LANG = 'logingrupa.dashboardshopaholic::lang.';
 
-    const BUCKET_ICON_MAP = [
+    public const BUCKET_ICON_MAP = [
         StatusBuckets::UNPROCESSED => 'ph ph-tray',
         StatusBuckets::PROCESSING => 'ph ph-clock',
         StatusBuckets::SHIPPED => 'ph ph-truck',
@@ -234,7 +234,7 @@ class OrdersReportDataSource extends ReportDataSourceBase
 
         $bNeedsAttention = $sBucket === StatusBuckets::UNPROCESSED && $iCount > 0;
 
-        $obResult = new ReportFetchDataResult;
+        $obResult = new ReportFetchDataResult();
 
         return $obResult->setRows($this->makeResultRow($obData->dimension, [
             ReportData::METRIC_VALUE => $iCount,

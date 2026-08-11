@@ -22,5 +22,21 @@
         "psr-4": {
             "Logingrupa\\DashboardShopaholic\\": ""
         }
+    },
+    "scripts": {
+        "test": "../../../vendor/bin/pest --configuration phpunit.xml",
+        "analyse": "../../../vendor/bin/phpstan analyse --configuration=phpstan.neon",
+        "baseline": "../../../vendor/bin/phpstan analyse --configuration=phpstan.neon --generate-baseline=phpstan-baseline.neon",
+        "phpmd": "../../../vendor/bin/phpmd classes,models,console,vuecomponents/NewOrdersList.php,Plugin.php text phpmd.xml",
+        "pint": "../../../vendor/bin/pint . --config=pint.json",
+        "pint-test": "../../../vendor/bin/pint . --config=pint.json --test",
+        "rector-dry": "../../../vendor/bin/rector process --config=rector.php --dry-run",
+        "rector": "../../../vendor/bin/rector process --config=rector.php",
+        "qa": [
+            "@pint-test",
+            "@analyse",
+            "@phpmd",
+            "@test"
+        ]
     }
 }

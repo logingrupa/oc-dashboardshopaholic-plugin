@@ -157,7 +157,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->seedOrderWithStat(['status_id' => 5, 'created_at' => '2026-08-01 10:00:00'], 20.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-01 11:00:00'], 30.00);
 
-        $obDataSource = new OrdersReportDataSource;
+        $obDataSource = new OrdersReportDataSource();
         $obData = $this->makeFetchData(
             'indicator@orders_unprocessed',
             ['value', 'icon_status', 'link_enabled', 'link_href'],
@@ -185,7 +185,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
 
-        $obDataSource = new OrdersReportDataSource;
+        $obDataSource = new OrdersReportDataSource();
         $obData = $this->makeFetchData(
             'date',
             ['turnover'],
@@ -209,7 +209,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
      */
     private function fetchRowsByDimension(string $sDimensionCode, array $arMetricCodeList): array
     {
-        $obDataSource = new OrdersReportDataSource;
+        $obDataSource = new OrdersReportDataSource();
         $obData = $this->makeFetchData(
             $sDimensionCode,
             $arMetricCodeList,

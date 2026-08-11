@@ -1,14 +1,14 @@
 <?php namespace Logingrupa\DashboardShopaholic;
 
-use Event;
-use System\Classes\PluginBase;
 use Dashboard\Classes\DashManager;
-use Lovata\Shopaholic\Models\PriceType;
+use Event;
 use Logingrupa\DashboardShopaholic\Classes\DataSource\OrdersReportDataSource;
 use Logingrupa\DashboardShopaholic\Classes\Event\OrderStatHandler;
 use Logingrupa\DashboardShopaholic\Console\BackfillOrderStats;
 use Logingrupa\DashboardShopaholic\Models\Settings;
 use Logingrupa\DashboardShopaholic\VueComponents\NewOrdersList;
+use Lovata\Shopaholic\Models\PriceType;
+use System\Classes\PluginBase;
 
 /**
  * DashboardShopaholic plugin registration file.

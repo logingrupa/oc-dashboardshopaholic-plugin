@@ -1,8 +1,8 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
-use Schema;
 use October\Rain\Database\Schema\Blueprint;
 use October\Rain\Database\Updates\Migration;
+use Schema;
 
 /**
  * The upstream order positions table ships without an order_id index; the
@@ -11,8 +11,8 @@ use October\Rain\Database\Updates\Migration;
  */
 class AddOrderPositionsOrderIdIndex extends Migration
 {
-    const TABLE = 'lovata_orders_shopaholic_order_positions';
-    const INDEX = 'logingrupa_dsb_positions_order_id';
+    public const TABLE = 'lovata_orders_shopaholic_order_positions';
+    public const INDEX = 'logingrupa_dsb_positions_order_id';
 
     public function up()
     {

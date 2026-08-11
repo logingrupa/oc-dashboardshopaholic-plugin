@@ -1,9 +1,9 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
-use October\Rain\Database\Updates\Migration;
 use Dashboard\Models\Dashboard;
 use Logingrupa\DashboardShopaholic\Classes\DataSource\OrdersReportDataSource;
 use Logingrupa\DashboardShopaholic\VueComponents\NewOrdersList;
+use October\Rain\Database\Updates\Migration;
 
 /**
  * Seed the "Shopaholic Dashboard" on the MAIN backend dashboard with a default
@@ -12,9 +12,9 @@ use Logingrupa\DashboardShopaholic\VueComponents\NewOrdersList;
  */
 class SeedShopaholicDashboard extends Migration
 {
-    const DASHBOARD_CODE = 'shopaholic-dash';
-    const OWNER_TYPE = \Dashboard\Controllers\Index::class;
-    const LANG = 'logingrupa.dashboardshopaholic::lang.';
+    public const DASHBOARD_CODE = 'shopaholic-dash';
+    public const OWNER_TYPE = \Dashboard\Controllers\Index::class;
+    public const LANG = 'logingrupa.dashboardshopaholic::lang.';
 
     public function up(): void
     {
@@ -23,7 +23,7 @@ class SeedShopaholicDashboard extends Migration
             ->first();
 
         if ($obDashboard === null) {
-            $obDashboard = new Dashboard;
+            $obDashboard = new Dashboard();
             $obDashboard->owner_type = self::OWNER_TYPE;
             $obDashboard->code = self::DASHBOARD_CODE;
             $obDashboard->name = 'Shopaholic Dashboard';
