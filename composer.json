@@ -1,0 +1,12 @@
+{
+  "name": "logingrupa/oc-dashboardshopaholic-plugin",
+  "type": "october-plugin",
+  "description": "October CMS v4 dashboard for the Lovata Shopaholic ecosystem: order status buckets, exact turnover, price-type based profit metrics and a live new-orders widget.",
+  "license": "GPL-3.0-only",
+  "require": {
+    "composer/installers": "~1.0 || ~2.0",
+    "lovata/toolbox-plugin": "^2.2",
+    "lovata/shopaholic-plugin": "^1.32",
+    "lovata/ordersshopaholic-plugin": "^1.33"
+  }
+}

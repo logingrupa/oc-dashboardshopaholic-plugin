@@ -1,0 +1,10 @@
+1.0.0:
+    - Shop dashboard - orders data source (buckets, turnover, price-type profit), new orders widget, order stat fact table
+    - create_order_stats_table.php
+    - add_order_positions_order_id_index.php
+1.1.0:
+    - Seed the Shopaholic Dashboard default layout on the main backend dashboard
+    - seed_shopaholic_dashboard.php
+1.2.0:
+    - Single Profit metric with cost price type in settings, VAT flag on price types
+    - add_price_types_vat_flag.php

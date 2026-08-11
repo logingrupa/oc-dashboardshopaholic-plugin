@@ -1,0 +1,11 @@
+# ===================================
+#  Settings - Dashboard for Shopaholic
+# ===================================
+
+fields:
+    cost_price_type_id:
+        label: Cost price type
+        comment: Price type holding your purchase (cost) prices, e.g. Vairum. The Profit metric = order revenue ex VAT minus this price per position. Empty = no Profit metric on the dashboard. Mark whether that price type stores prices with or without VAT on the price type itself (Shopaholic > Price Types).
+        type: dropdown
+        emptyOption: -- none, Profit metric disabled --
+        span: left

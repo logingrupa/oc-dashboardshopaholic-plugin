@@ -1,0 +1,36 @@
+.lg-new-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lg-new-orders-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  vertical-align: top;
+}
+
+.lg-new-orders-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.lg-new-orders-number {
+  font-weight: 600;
+}
+
+.lg-new-orders-total {
+  font-weight: 600;
+}
+
+.lg-new-orders-right {
+  text-align: right;
+}
+
+.lg-new-orders-muted {
+  font-size: 12px;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+
+.lg-new-orders-note {
+  opacity: 0.65;
+}
