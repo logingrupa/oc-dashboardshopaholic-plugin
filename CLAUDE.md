@@ -55,3 +55,9 @@ Root CLAUDE.md governs: Hungarian notation, Store -> Collection -> Item read pat
   not exist on frontend requests or in plain console context.
 - After changing bucket/metric logic, re-run the backfill command so historical
   order_stats rows match the new definition.
+- Backfill on prod-size stores (30k+ orders) exhausts the default 512M CLI memory
+  limit around 31k orders despite per-chunk processor resets - run it as
+  `php8.4 -d memory_limit=2G artisan dashboardshopaholic:backfill --chunk=500`.
+  The writer is updateOrCreate-idempotent, so a died run is safely re-run in full.
+- On nailscosmetics.lv2 the default `php` CLI is 8.3 and the app requires 8.4
+  (symfony 8 + customxmlimportpricing pin) - always `php8.4` there.
