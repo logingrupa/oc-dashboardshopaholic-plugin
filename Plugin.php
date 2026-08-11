@@ -27,8 +27,8 @@ class Plugin extends PluginBase
     public function pluginDetails(): array
     {
         return [
-            'name' => 'Dashboard for Shopaholic',
-            'description' => 'Shop dashboard: order buckets, turnover, price-type profit metrics, new orders widget',
+            'name' => 'logingrupa.dashboardshopaholic::lang.plugin.name',
+            'description' => 'logingrupa.dashboardshopaholic::lang.plugin.description',
             'author' => 'Logingrupa',
             'icon' => 'icon-chart-bar',
         ];
@@ -73,8 +73,8 @@ class Plugin extends PluginBase
 
             $obWidget->addFields([
                 'price_includes_vat' => [
-                    'label' => 'Prices include VAT (gross)',
-                    'comment' => 'Off = prices stored without VAT (net). Used by the dashboard Profit metric when this price type is the cost basis',
+                    'label' => 'logingrupa.dashboardshopaholic::lang.field.price_includes_vat',
+                    'comment' => 'logingrupa.dashboardshopaholic::lang.field.price_includes_vat_comment',
                     'type' => 'switch',
                     'default' => 0,
                     'span' => 'left',
@@ -91,7 +91,7 @@ class Plugin extends PluginBase
 
             $obWidget->addColumns([
                 'price_includes_vat' => [
-                    'label' => 'Incl VAT',
+                    'label' => 'logingrupa.dashboardshopaholic::lang.field.price_includes_vat_column',
                     'type' => 'switch',
                 ],
             ]);
@@ -102,8 +102,8 @@ class Plugin extends PluginBase
     {
         return [
             'settings' => [
-                'label' => 'Dashboard',
-                'description' => 'Cost price type for the Profit metric',
+                'label' => 'logingrupa.dashboardshopaholic::lang.settings.label',
+                'description' => 'logingrupa.dashboardshopaholic::lang.settings.description',
                 'category' => 'lovata.shopaholic::lang.tab.settings',
                 'icon' => 'icon-chart-bar',
                 'class' => Settings::class,
@@ -117,7 +117,7 @@ class Plugin extends PluginBase
     {
         return [
             NewOrdersList::class => [
-                'label' => 'Shopaholic: New Orders',
+                'label' => 'logingrupa.dashboardshopaholic::lang.widget.new_orders',
                 'group' => 'Shopaholic',
                 'permissions' => ['logingrupa.dashboardshopaholic.access_dashboard'],
             ],
@@ -128,13 +128,13 @@ class Plugin extends PluginBase
     {
         return [
             'logingrupa.dashboardshopaholic.access_dashboard' => [
-                'label' => 'Access the shop dashboard',
-                'tab' => 'Dashboard for Shopaholic',
+                'label' => 'logingrupa.dashboardshopaholic::lang.permission.access_dashboard',
+                'tab' => 'logingrupa.dashboardshopaholic::lang.permission.tab',
                 'order' => 100,
             ],
             'logingrupa.dashboardshopaholic.view_profit' => [
-                'label' => 'View profit metrics',
-                'tab' => 'Dashboard for Shopaholic',
+                'label' => 'logingrupa.dashboardshopaholic::lang.permission.view_profit',
+                'tab' => 'logingrupa.dashboardshopaholic::lang.permission.tab',
                 'order' => 200,
             ],
         ];

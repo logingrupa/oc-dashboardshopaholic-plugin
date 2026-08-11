@@ -14,6 +14,7 @@ class SeedShopaholicDashboard extends Migration
 {
     const DASHBOARD_CODE = 'shopaholic-dash';
     const OWNER_TYPE = \Dashboard\Controllers\Index::class;
+    const LANG = 'logingrupa.dashboardshopaholic::lang.';
 
     public function up(): void
     {
@@ -56,18 +57,18 @@ class SeedShopaholicDashboard extends Migration
     {
         return [
             ['widgets' => [
-                $this->makeIndicator(1, 'orders_unprocessed', 'Unprocessed', 'ph ph-tray'),
-                $this->makeIndicator(1, 'orders_processing', 'Processing', 'ph ph-clock'),
-                $this->makeIndicator(1, 'orders_shipped', 'Shipped', 'ph ph-truck'),
-                $this->makeIndicator(1, 'orders_canceled', 'Canceled', 'ph ph-x-circle'),
+                $this->makeIndicator(1, 'orders_unprocessed', self::LANG.'bucket.unprocessed', 'ph ph-tray'),
+                $this->makeIndicator(1, 'orders_processing', self::LANG.'bucket.processing', 'ph ph-clock'),
+                $this->makeIndicator(1, 'orders_shipped', self::LANG.'bucket.shipped', 'ph ph-truck'),
+                $this->makeIndicator(1, 'orders_canceled', self::LANG.'bucket.canceled', 'ph ph-x-circle'),
             ]],
             ['widgets' => [
                 $this->makeNewOrdersWidget(2),
                 $this->makeTurnoverChart(2),
             ]],
             ['widgets' => [
-                $this->makeTable(3, 'by_status_table', 'Orders by Status', 'status'),
-                $this->makeTable(3, 'by_payment_table', 'Orders by Payment Method', 'payment_method'),
+                $this->makeTable(3, 'by_status_table', self::LANG.'widget.by_status', 'status'),
+                $this->makeTable(3, 'by_payment_table', self::LANG.'widget.by_payment', 'payment_method'),
             ]],
         ];
     }
@@ -83,7 +84,7 @@ class SeedShopaholicDashboard extends Migration
             'label' => null,
             'icon' => $sIcon,
             'title' => $sTitle,
-            'linkText' => 'View orders',
+            'linkText' => self::LANG.'widget.view_orders',
             'dimension' => 'indicator@'.$sName,
             'dataSource' => OrdersReportDataSource::class,
         ]);
@@ -102,7 +103,7 @@ class SeedShopaholicDashboard extends Migration
             'width' => 10,
             'reportName' => 'turnover_chart',
             'label' => null,
-            'title' => 'Turnover & Profit',
+            'title' => self::LANG.'widget.chart_title',
             'dimension' => 'date',
             'sortBy' => 'oc_dimension',
             'sortOrder' => 'asc',
@@ -139,8 +140,8 @@ class SeedShopaholicDashboard extends Migration
             'row' => $iRow,
             'width' => 10,
             'reportName' => 'new_orders_list',
-            'label' => 'New Orders',
-            'title' => 'New Orders',
+            'label' => self::LANG.'widget.new_orders_title',
+            'title' => self::LANG.'widget.new_orders_title',
             'ordersLimit' => 10,
             'componentName' => 'logingrupa-dashboardshopaholic-vuecomponents-neworderslist',
         ], NewOrdersList::class);

@@ -1,10 +1,10 @@
 <div class="widget-body lg-new-orders">
     <h3 class="widget-title" v-text="widget.configuration.title"></h3>
 
-    <p v-if="loading && !customData" class="lg-new-orders-note"><?= __("Loading...") ?></p>
+    <p v-if="loading && !customData" class="lg-new-orders-note"><?= e(trans('logingrupa.dashboardshopaholic::lang.widget.loading')) ?></p>
 
     <template v-if="customData">
-        <p v-if="!customData.orders.length" class="lg-new-orders-note"><?= __("No unprocessed orders") ?></p>
+        <p v-if="!customData.orders.length" class="lg-new-orders-note"><?= e(trans('logingrupa.dashboardshopaholic::lang.widget.no_orders')) ?></p>
 
         <table v-else class="lg-new-orders-table">
             <tbody>

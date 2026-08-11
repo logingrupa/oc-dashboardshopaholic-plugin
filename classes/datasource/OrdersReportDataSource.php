@@ -50,12 +50,7 @@ class OrdersReportDataSource extends ReportDataSourceBase
         'indicator@orders_canceled' => StatusBuckets::CANCELED,
     ];
 
-    const BUCKET_LABEL_MAP = [
-        StatusBuckets::UNPROCESSED => 'Unprocessed',
-        StatusBuckets::PROCESSING => 'Processing',
-        StatusBuckets::SHIPPED => 'Shipped',
-        StatusBuckets::CANCELED => 'Canceled',
-    ];
+    const LANG = 'logingrupa.dashboardshopaholic::lang.';
 
     const BUCKET_ICON_MAP = [
         StatusBuckets::UNPROCESSED => 'ph ph-tray',
@@ -106,19 +101,19 @@ class OrdersReportDataSource extends ReportDataSourceBase
         $this->registerDimension(new ReportDimension(
             ReportDimension::CODE_DATE,
             'ordered_at',
-            'Date'
+            trans(self::LANG.'dimension.date')
         ));
 
         $this->registerDimension(new ReportDimension(
             self::DIMENSION_STATUS,
             self::STATUSES_TABLE.'.name',
-            'Order Status'
+            trans(self::LANG.'dimension.status')
         ));
 
         $this->registerDimension(new ReportDimension(
             self::DIMENSION_PAYMENT_METHOD,
             self::PAYMENT_METHODS_TABLE.'.name',
-            'Payment Method'
+            trans(self::LANG.'dimension.payment_method')
         ));
     }
 
@@ -126,11 +121,11 @@ class OrdersReportDataSource extends ReportDataSourceBase
     {
         foreach (self::BUCKET_DIMENSION_MAP as $sDimensionCode => $sBucket) {
             ReportData::addIndicatorMetrics(
-                $this->addCalculatedDimension($sDimensionCode, self::BUCKET_LABEL_MAP[$sBucket].' orders')
+                $this->addCalculatedDimension($sDimensionCode, trans(self::LANG.'bucket_dimension.'.$sBucket))
                     ->setDefaultWidgetConfig([
-                        'title' => self::BUCKET_LABEL_MAP[$sBucket],
+                        'title' => trans(self::LANG.'bucket.'.$sBucket),
                         'icon' => self::BUCKET_ICON_MAP[$sBucket],
-                        'link_text' => 'View orders',
+                        'link_text' => trans(self::LANG.'widget.view_orders'),
                     ])
             );
         }
@@ -141,14 +136,14 @@ class OrdersReportDataSource extends ReportDataSourceBase
         $this->registerMetric(new ReportMetric(
             self::METRIC_ORDERS_COUNT,
             self::STATS_TABLE.'.order_id',
-            'Orders',
+            trans(self::LANG.'metric.orders'),
             ReportMetric::AGGREGATE_COUNT
         ));
 
         $this->registerMetric(new ReportMetric(
             self::METRIC_TURNOVER,
             self::STATS_TABLE.'.total_price',
-            'Turnover (incl VAT)',
+            trans(self::LANG.'metric.turnover'),
             ReportMetric::AGGREGATE_SUM,
             $this->currencyFormatOptions()
         ));
@@ -177,7 +172,7 @@ class OrdersReportDataSource extends ReportDataSourceBase
             $obDefaultCostType === null
                 ? '(0)'
                 : $this->makeProfitExpression((int) $obDefaultCostType->id, (bool) $obDefaultCostType->price_includes_vat),
-            'Profit (approx, ex VAT)',
+            trans(self::LANG.'metric.profit'),
             ReportMetric::AGGREGATE_SUM,
             $this->currencyFormatOptions()
         ));
@@ -186,7 +181,7 @@ class OrdersReportDataSource extends ReportDataSourceBase
             $this->registerMetric(new ReportMetric(
                 self::METRIC_PROFIT.'_'.$obPriceType->id,
                 $this->makeProfitExpression((int) $obPriceType->id, (bool) $obPriceType->price_includes_vat),
-                'Profit vs '.$obPriceType->name,
+                trans(self::LANG.'metric.profit_vs', ['name' => $obPriceType->name]),
                 ReportMetric::AGGREGATE_SUM,
                 $this->currencyFormatOptions()
             ));

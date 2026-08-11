@@ -1,0 +1,56 @@
+<?php return [
+    'plugin' => [
+        'name' => 'Dashboard for Shopaholic',
+        'description' => 'Shop dashboard: order buckets, turnover, profit metrics, new orders widget',
+    ],
+    'settings' => [
+        'label' => 'Dashboard',
+        'description' => 'Cost price type for the Profit metric',
+        'cost_price_type' => 'Cost price type',
+        'cost_price_type_comment' => 'Price type holding your purchase (cost) prices, e.g. Vairum. The Profit metric = order revenue ex VAT minus this price per position. Empty = no Profit metric on the dashboard. Mark whether that price type stores prices with or without VAT on the price type itself (Shopaholic > Price Types).',
+        'cost_price_type_empty' => '-- none, Profit metric disabled --',
+    ],
+    'permission' => [
+        'tab' => 'Dashboard for Shopaholic',
+        'access_dashboard' => 'Access the shop dashboard',
+        'view_profit' => 'View profit metrics',
+    ],
+    'field' => [
+        'price_includes_vat' => 'Prices include VAT (gross)',
+        'price_includes_vat_comment' => 'Off = prices stored without VAT (net). Used by the dashboard Profit metric when this price type is the cost basis',
+        'price_includes_vat_column' => 'Incl VAT',
+    ],
+    'dimension' => [
+        'date' => 'Date',
+        'status' => 'Order Status',
+        'payment_method' => 'Payment Method',
+    ],
+    'metric' => [
+        'orders' => 'Orders',
+        'turnover' => 'Turnover (incl VAT)',
+        'profit' => 'Profit (approx, ex VAT)',
+        'profit_vs' => 'Profit vs :name',
+    ],
+    'bucket' => [
+        'unprocessed' => 'Unprocessed',
+        'processing' => 'Processing',
+        'shipped' => 'Shipped',
+        'canceled' => 'Canceled',
+    ],
+    'bucket_dimension' => [
+        'unprocessed' => 'Unprocessed orders',
+        'processing' => 'Processing orders',
+        'shipped' => 'Shipped orders',
+        'canceled' => 'Canceled orders',
+    ],
+    'widget' => [
+        'new_orders' => 'Shopaholic: New Orders',
+        'new_orders_title' => 'New Orders',
+        'loading' => 'Loading...',
+        'no_orders' => 'No unprocessed orders',
+        'view_orders' => 'View orders',
+        'chart_title' => 'Turnover & Profit',
+        'by_status' => 'Orders by Status',
+        'by_payment' => 'Orders by Payment Method',
+    ],
+];

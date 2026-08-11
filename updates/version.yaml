@@ -8,3 +8,5 @@
 1.2.0:
     - Single Profit metric with cost price type in settings, VAT flag on price types
     - add_price_types_vat_flag.php
+1.3.0:
+    - Backend translated to en, lv, ru, nb - metrics, dimensions, settings, permissions, widgets, seeded dashboard titles
