@@ -38,6 +38,11 @@ class BackfillOrderStats extends Command
                     try {
                         OrderStatWriter::write($obOrder, false);
                         $iWritten++;
+
+                        // Campaign-era orders carry mechanism closures holding full
+                        // product/offer collections; keeping a whole chunk of
+                        // processors alive peaks at ~250MB. Release per order.
+                        $this->resetPromoProcessorStore();
                     } catch (Throwable $obException) {
                         $arFailedIDList[] = (int) $obOrder->id;
                         Log::error('DashboardShopaholic backfill failed for order '.$obOrder->id.': '.$obException->getMessage());
@@ -50,10 +55,12 @@ class BackfillOrderStats extends Command
                     }
                 }
 
-                // The promo processor memoizes one instance per order id for the whole
-                // process; a CLI loop over every order would grow without bound
-                $this->resetPromoProcessorStore();
-                $this->info('Processed '.$iWritten.' orders...');
+                // Processor <-> price container reference cycles outrun PHP's
+                // automatic GC on 30k+ order stores - collect deterministically
+                // per chunk or the run dies at ~31k orders under a 512M limit
+                gc_collect_cycles();
+
+                $this->info('Processed '.$iWritten.' orders... ('.round(memory_get_usage(true) / 1048576).'MB)');
 
                 return true;
             });
