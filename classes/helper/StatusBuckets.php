@@ -11,21 +11,15 @@ use SystemException;
 class StatusBuckets
 {
     public const UNPROCESSED = 'unprocessed';
-    public const PROCESSING = 'processing';
-    public const SHIPPED = 'shipped';
     public const CANCELED = 'canceled';
 
     public const BUCKET_LIST = [
         self::UNPROCESSED,
-        self::PROCESSING,
-        self::SHIPPED,
         self::CANCELED,
     ];
 
     public const STATUS_CODE_MAP = [
         self::UNPROCESSED => ['new', 'new-payment-received', 'new-payment-error', 'new-payment-canceled'],
-        self::PROCESSING => ['in_progress'],
-        self::SHIPPED => ['sent', 'complete'],
         self::CANCELED => ['canceled'],
     ];
 

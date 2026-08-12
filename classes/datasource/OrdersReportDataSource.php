@@ -1,6 +1,5 @@
 <?php namespace Logingrupa\DashboardShopaholic\Classes\DataSource;
 
-use Backend;
 use BackendAuth;
 use Dashboard\Classes\ReportData;
 use Dashboard\Classes\ReportDataOrderRule;
@@ -29,7 +28,6 @@ use SystemException;
 class OrdersReportDataSource extends ReportDataSourceBase
 {
     public const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
-    public const ORDERS_TABLE = 'lovata_orders_shopaholic_orders';
     public const POSITIONS_TABLE = 'lovata_orders_shopaholic_order_positions';
     public const PRICES_TABLE = 'lovata_shopaholic_prices';
     public const PRICE_TYPES_TABLE = 'lovata_shopaholic_price_types';
@@ -42,27 +40,17 @@ class OrdersReportDataSource extends ReportDataSourceBase
     public const METRIC_ORDERS_COUNT = 'orders_count';
     public const METRIC_TURNOVER = 'turnover';
     public const METRIC_PROFIT = 'profit';
+    public const METRIC_AVG_ORDER_VALUE = 'avg_order_value';
+    public const METRIC_CANCEL_RATE = 'cancel_rate';
 
-    public const BUCKET_DIMENSION_MAP = [
-        'indicator@orders_unprocessed' => StatusBuckets::UNPROCESSED,
-        'indicator@orders_processing' => StatusBuckets::PROCESSING,
-        'indicator@orders_shipped' => StatusBuckets::SHIPPED,
-        'indicator@orders_canceled' => StatusBuckets::CANCELED,
-    ];
+    public const DIMENSION_MEDIAN_ORDER_VALUE = 'indicator@median_order_value';
 
     public const LANG = 'logingrupa.dashboardshopaholic::lang.';
-
-    public const BUCKET_ICON_MAP = [
-        StatusBuckets::UNPROCESSED => 'ph ph-tray',
-        StatusBuckets::PROCESSING => 'ph ph-clock',
-        StatusBuckets::SHIPPED => 'ph ph-truck',
-        StatusBuckets::CANCELED => 'ph ph-x-circle',
-    ];
 
     public function __construct()
     {
         $this->registerOrderDimensions();
-        $this->registerBucketIndicatorDimensions();
+        $this->registerMedianIndicatorDimension();
         $this->registerRevenueMetrics();
 
         if ($this->canViewProfit()) {
@@ -74,8 +62,8 @@ class OrdersReportDataSource extends ReportDataSourceBase
     {
         $sDimensionCode = $obData->dimension->getCode();
 
-        if (array_key_exists($sDimensionCode, self::BUCKET_DIMENSION_MAP)) {
-            return $this->fetchBucketIndicatorData($obData);
+        if ($sDimensionCode === self::DIMENSION_MEDIAN_ORDER_VALUE) {
+            return $this->fetchMedianIndicatorData($obData);
         }
 
         // ReportDataQueryBuilder, not ReportQueryBuilder: the new builder applies
@@ -117,20 +105,6 @@ class OrdersReportDataSource extends ReportDataSourceBase
         ));
     }
 
-    private function registerBucketIndicatorDimensions(): void
-    {
-        foreach (self::BUCKET_DIMENSION_MAP as $sDimensionCode => $sBucket) {
-            ReportData::addIndicatorMetrics(
-                $this->addCalculatedDimension($sDimensionCode, trans(self::LANG.'bucket_dimension.'.$sBucket))
-                    ->setDefaultWidgetConfig([
-                        'title' => trans(self::LANG.'bucket.'.$sBucket),
-                        'icon' => self::BUCKET_ICON_MAP[$sBucket],
-                        'link_text' => trans(self::LANG.'widget.view_orders'),
-                    ])
-            );
-        }
-    }
-
     private function registerRevenueMetrics(): void
     {
         $this->registerMetric(new ReportMetric(
@@ -147,6 +121,55 @@ class OrdersReportDataSource extends ReportDataSourceBase
             ReportMetric::AGGREGATE_SUM,
             $this->currencyFormatOptions()
         ));
+
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_AVG_ORDER_VALUE,
+            self::STATS_TABLE.'.total_price',
+            trans(self::LANG.'metric.avg_order_value'),
+            ReportMetric::AGGREGATE_AVG,
+            $this->currencyFormatOptions()
+        ));
+
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_CANCEL_RATE,
+            $this->makeCancelRateExpression(),
+            trans(self::LANG.'metric.cancel_rate'),
+            ReportMetric::AGGREGATE_AVG,
+            ['style' => 'percent', 'maximumFractionDigits' => 1]
+        ));
+    }
+
+    /**
+     * AVG over a 0/1 flag = cancellation share of orders in the range.
+     * Intl percent formatting multiplies by 100 on the client.
+     */
+    private function makeCancelRateExpression(): string
+    {
+        $arStatusIDList = StatusBuckets::getStatusIds(StatusBuckets::CANCELED);
+
+        if (empty($arStatusIDList)) {
+            return '(0)';
+        }
+
+        // 1.0 not 1: SQLite would average integers to zero
+        return sprintf(
+            '(case when %s.status_id in (%s) then 1.0 else 0 end)',
+            self::STATS_TABLE,
+            implode(',', $arStatusIDList)
+        );
+    }
+
+    private function registerMedianIndicatorDimension(): void
+    {
+        ReportData::addIndicatorMetrics(
+            $this->addCalculatedDimension(
+                self::DIMENSION_MEDIAN_ORDER_VALUE,
+                trans(self::LANG.'dimension.median_order_value')
+            )->setDefaultWidgetConfig([
+                'title' => trans(self::LANG.'widget.median_order_value'),
+                'icon' => 'ph ph-chart-bar',
+            ])
+        );
     }
 
     /**
@@ -220,29 +243,50 @@ class OrdersReportDataSource extends ReportDataSourceBase
     }
 
     /**
-     * Bucket counters are absolute (current backlog), intentionally ignoring the
-     * dashboard date range - an unprocessed order from last month still needs work.
+     * Median total_price of orders in the dashboard date range. Same
+     * startOfDay/endOfDay window the metric query builder applies, so the card
+     * agrees with the charts. No SQL MEDIAN exists in MySQL or SQLite - count
+     * plus offset into the sorted set covers both (two middle rows averaged on
+     * even counts).
      */
-    private function fetchBucketIndicatorData(ReportFetchData $obData): ReportFetchDataResult
+    private function fetchMedianIndicatorData(ReportFetchData $obData): ReportFetchDataResult
     {
-        $sBucket = self::BUCKET_DIMENSION_MAP[$obData->dimension->getCode()];
-        $arStatusIDList = StatusBuckets::getStatusIds($sBucket);
+        $obQuery = Db::table(self::STATS_TABLE);
 
-        $iCount = empty($arStatusIDList)
-            ? 0
-            : Db::table(self::ORDERS_TABLE)->whereIn('status_id', $arStatusIDList)->count();
+        if ($obData->dateStart !== null && $obData->dateEnd !== null) {
+            $obQuery->whereBetween('ordered_at', [
+                $obData->dateStart->copy()->startOfDay()->toDateTimeString(),
+                $obData->dateEnd->copy()->endOfDay()->toDateTimeString(),
+            ]);
+        }
 
-        $bNeedsAttention = $sBucket === StatusBuckets::UNPROCESSED && $iCount > 0;
+        $iCount = $obQuery->count();
+
+        $fMedian = 0.0;
+        if ($iCount > 0) {
+            // total_price is a decimal column - drivers return numeric strings
+            $arMiddleList = array_map(
+                static fn (mixed $fPrice): float => is_numeric($fPrice) ? (float) $fPrice : 0.0,
+                $obQuery
+                    ->orderBy('total_price')
+                    ->offset(intdiv($iCount - 1, 2))
+                    ->limit(2 - ($iCount % 2))
+                    ->pluck('total_price')
+                    ->all()
+            );
+
+            if ($arMiddleList !== []) {
+                $fMedian = array_sum($arMiddleList) / count($arMiddleList);
+            }
+        }
 
         $obResult = new ReportFetchDataResult();
 
         return $obResult->setRows($this->makeResultRow($obData->dimension, [
-            ReportData::METRIC_VALUE => $iCount,
-            ReportData::METRIC_INDICATOR_ICON_STATUS => $bNeedsAttention
-                ? ReportData::INDICATOR_ICON_STATUS_IMPORTANT
-                : ReportData::INDICATOR_ICON_STATUS_INFO,
-            ReportData::METRIC_LINK_ENABLED => true,
-            ReportData::METRIC_LINK_HREF => Backend::url('lovata/ordersshopaholic/orders'),
+            ReportData::METRIC_VALUE => number_format($fMedian, 2).' '.ActiveCurrency::code(),
+            ReportData::METRIC_INDICATOR_ICON_STATUS => ReportData::INDICATOR_ICON_STATUS_INFO,
+            ReportData::METRIC_LINK_ENABLED => false,
+            ReportData::METRIC_LINK_HREF => '',
         ]));
     }
 

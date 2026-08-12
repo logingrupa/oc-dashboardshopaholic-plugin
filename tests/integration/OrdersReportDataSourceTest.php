@@ -149,30 +149,6 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         Logingrupa\DashboardShopaholic\Models\Settings::set('cost_price_type_id', $iPriceTypeID);
     }
 
-    public function testBucketIndicatorCountsBacklogIgnoringDateRange(): void
-    {
-        $this->seedBaseData();
-
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2020-01-01 10:00:00'], 10.00);
-        $this->seedOrderWithStat(['status_id' => 5, 'created_at' => '2026-08-01 10:00:00'], 20.00);
-        $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-01 11:00:00'], 30.00);
-
-        $obDataSource = new OrdersReportDataSource();
-        $obData = $this->makeFetchData(
-            'indicator@orders_unprocessed',
-            ['value', 'icon_status', 'link_enabled', 'link_href'],
-            Carbon::parse('2026-08-01'),
-            Carbon::parse('2026-08-31')
-        );
-
-        $arRowList = $obDataSource->getData($obData)->getRows();
-
-        $this->assertCount(1, $arRowList);
-        // Both unprocessed orders counted, the 2020 one included - it is a backlog counter
-        $this->assertSame(2, (int) $arRowList[0]->oc_metric_value);
-        $this->assertSame('important', $arRowList[0]->oc_metric_icon_status);
-    }
-
     /**
      * Regression: the turnover chart 500ed because metric totals ran a query
      * ordered by oc_dimension - a column the totals select does not contain.
@@ -202,6 +178,123 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         // Date dimension pads every day of the range - 31 rows for August
         $this->assertCount(31, $obResult->getRows());
         $this->assertEqualsWithDelta(150.0, (float) $obResult->getMetricTotals()['turnover'], 0.001);
+    }
+
+    public function testAvgOrderValueTotalsOverRange(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['avg_order_value']);
+
+        $this->assertEqualsWithDelta(60.0, (float) $arTotalMap['avg_order_value'], 0.001);
+    }
+
+    public function testCancelRateTotalsOverRange(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 30.00);
+        // Canceled outside the range must not move the rate
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-07-01 10:00:00'], 10.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['cancel_rate']);
+
+        // 1 canceled of 3 in range; Intl percent formatting scales client-side
+        $this->assertEqualsWithDelta(1 / 3, (float) $arTotalMap['cancel_rate'], 0.001);
+    }
+
+    public function testMedianOddCount(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 10.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 500.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 20.00);
+
+        $this->assertSame('20.00 EUR', $this->fetchMedianValue());
+    }
+
+    public function testMedianEvenCountAveragesMiddlePair(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 10.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 20.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-04 10:00:00'], 500.00);
+
+        $this->assertSame('25.00 EUR', $this->fetchMedianValue());
+    }
+
+    public function testMedianRespectsDateRangeAndEmptyRangeIsZero(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 40.00);
+
+        $this->assertSame('40.00 EUR', $this->fetchMedianValue());
+
+        $obDataSource = new OrdersReportDataSource();
+        $obData = $this->makeFetchData(
+            OrdersReportDataSource::DIMENSION_MEDIAN_ORDER_VALUE,
+            ['value', 'icon_status', 'link_enabled', 'link_href'],
+            Carbon::parse('2026-09-01'),
+            Carbon::parse('2026-09-30')
+        );
+
+        $arRowList = $obDataSource->getData($obData)->getRows();
+
+        $this->assertSame('0.00 EUR', $arRowList[0]->oc_metric_value);
+    }
+
+    /**
+     * Median card value for the August 2026 window.
+     */
+    private function fetchMedianValue(): string
+    {
+        $obDataSource = new OrdersReportDataSource();
+        $obData = $this->makeFetchData(
+            OrdersReportDataSource::DIMENSION_MEDIAN_ORDER_VALUE,
+            ['value', 'icon_status', 'link_enabled', 'link_href'],
+            Carbon::parse('2026-08-01'),
+            Carbon::parse('2026-08-31')
+        );
+
+        $arRowList = $obDataSource->getData($obData)->getRows();
+
+        $this->assertCount(1, $arRowList);
+
+        return $arRowList[0]->oc_metric_value;
+    }
+
+    /**
+     * Metric totals for the August 2026 window, the way an indicator card in
+     * metric-totals mode requests them.
+     */
+    private function fetchMetricTotals(array $arMetricCodeList): array
+    {
+        $obDataSource = new OrdersReportDataSource();
+        $obData = $this->makeFetchData(
+            'date',
+            $arMetricCodeList,
+            Carbon::parse('2026-08-01'),
+            Carbon::parse('2026-08-31')
+        );
+
+        $obData->metricsConfiguration = [];
+        foreach ($arMetricCodeList as $sMetricCode) {
+            $obData->metricsConfiguration[$sMetricCode] = new Dashboard\Classes\ReportMetricConfiguration(true, false);
+        }
+
+        return $obDataSource->getData($obData)->getMetricTotals();
     }
 
     /**

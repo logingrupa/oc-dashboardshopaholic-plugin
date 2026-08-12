@@ -9,8 +9,6 @@ class StatusBucketsTest extends BaseDashboardShopaholicTestCase
         $this->seedBaseData();
 
         $this->assertSame([1, 5], StatusBuckets::getStatusIds(StatusBuckets::UNPROCESSED));
-        $this->assertSame([2], StatusBuckets::getStatusIds(StatusBuckets::PROCESSING));
-        $this->assertSame([3, 8], StatusBuckets::getStatusIds(StatusBuckets::SHIPPED));
         $this->assertSame([4], StatusBuckets::getStatusIds(StatusBuckets::CANCELED));
     }
 

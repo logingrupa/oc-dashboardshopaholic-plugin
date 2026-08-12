@@ -1,7 +1,8 @@
 # Logingrupa.DashboardShopaholic
 
-Backend shop dashboard: orders report data source (status buckets, turnover, price-type
-profit), "New Orders" Vue report widget, order_stats fact table kept in sync by events.
+Backend shop dashboard: orders report data source (period metrics: orders, turnover,
+average and median order value, cancel rate, price-type profit), "New Orders" Vue report
+widget, order_stats fact table kept in sync by events.
 Namespace Logingrupa\DashboardShopaholic, composer package
 logingrupa/oc-dashboardshopaholic-plugin. Requires Lovata.Toolbox, Lovata.Shopaholic,
 Lovata.OrdersShopaholic. README.md documents the metrics.
@@ -16,13 +17,17 @@ Lovata.OrdersShopaholic. README.md documents the metrics.
 - classes/datasource/  OrdersReportDataSource (registered with DashManager, backend only)
 - classes/event/       OrderStatHandler (order events -> order_stats fact rows)
 - classes/helper/      OrderStatWriter (writes fact rows), StatusBuckets (status -> bucket
-                       mapping), NewOrdersDataBuilder (widget payload), ActiveCurrency
+                       mapping), NewOrdersDataBuilder (widget payload), ActiveCurrency,
+                       DefaultDashboardLayout (stock + legacy dashboard definitions,
+                       shared by seed and period-cards migrations)
 - console/             BackfillOrderStats (`php artisan dashboardshopaholic.backfill`)
 - models/              OrderStat, Settings (cost price type setting, registerSettings())
 - vuecomponents/       NewOrdersList report widget (+ neworderslist partials/assets)
 - updates/             create_order_stats_table, order_positions order_id index,
                        seed_shopaholic_dashboard (seeds default dashboard layout),
-                       add_price_types_vat_flag
+                       add_price_types_vat_flag, update_dashboard_period_cards
+                       (swaps stock layout to period cards, strips dead bucket widgets
+                       from customized layouts)
 
 Plugin boot() extends Lovata\Shopaholic\Models\PriceType with price_includes_vat + form injection.
 

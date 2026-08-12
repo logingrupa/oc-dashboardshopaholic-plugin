@@ -14,3 +14,6 @@
     - QA toolchain - pint, phpstan level 10 + larastan, phpmd, rector, pest runner, Makefile, composer qa script
 1.3.2:
     - Backfill survives 512M on campaign-era stores - processor released per order, deterministic GC per chunk, memory in progress output
+1.4.0:
+    - Period cards replace all-time status counters - orders in period, average and median order value, cancel rate
+    - update_dashboard_period_cards.php
