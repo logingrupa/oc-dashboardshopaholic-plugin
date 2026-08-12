@@ -69,4 +69,17 @@
         'hours_to_ship' => 'Nosūtīšanas laiks (h)',
         'canceled_value' => 'Atcelto vērtība',
     ],
+    'help' => [
+        'now' => 'Šajā periodā',
+        'before' => 'Iepriekšējā periodā',
+        'orders_period' => 'Cik pasūtījumu klienti veikuši izvēlētajā periodā. Veikala pulss: ja krītas, vispirms skaties apmeklētību un mārketingu.',
+        'avg_order_value' => 'Apgrozījums dalīts ar pasūtījumu skaitu: cik vērts tipisks pirkums. Audzē ar komplektiem, papildprecēm un bezmaksas piegādes slieksni nedaudz virs šīs summas.',
+        'median_order_value' => 'Vidējais pasūtījums pēc kārtas: puse pasūtījumu ir mazāki, puse lielāki. Dažiem ļoti lieliem pasūtījumiem to izkropļot grūtāk nekā vidējo vērtību.',
+        'cancel_rate' => 'Cik liela daļa perioda pasūtījumu tika atcelti. Augoša atcelšana parasti nozīmē maksājumu vai noliktavas problēmas: pārbaudi atceltos pasūtījumus.',
+        'units_sold' => 'Kopējais pārdoto vienību skaits visos perioda pasūtījumos. Salīdzini ar apgrozījumu, lai redzētu, vai pārdod vairāk preču vai dārgākas preces.',
+        'avg_items' => 'Cik vienību ir vidējā pasūtījumā. Lielāks grozs padara katru piegādi lētāku uz vienību: audzē ar papildpārdošanu.',
+        'returning_share' => 'Cik liela daļa pasūtījumu ir no klientiem, kas pasūtījuši jau agrāk (tas pats konts vai tas pats e-pasts viesiem). Atkārtoti pirkumi ir lētāki nekā jaunu klientu piesaiste.',
+        'hours_to_ship' => 'Vidējais laiks no pasūtījuma brīža līdz statusam nosūtīts vai pabeigts. Lēna nosūtīšana maksā atkārtotos pirkumus: seko līdzi pēc kampaņām.',
+        'canceled_value' => 'Atcelto pasūtījumu vērtība periodā. Zaudētā nauda: izpēti lielākos.',
+    ],
 ];

@@ -69,4 +69,17 @@
         'hours_to_ship' => 'Timer til sending',
         'canceled_value' => 'Kansellert verdi',
     ],
+    'help' => [
+        'now' => 'Denne perioden',
+        'before' => 'Forrige periode',
+        'orders_period' => 'Hvor mange ordrer kundene la inn i valgt periode. Butikkens puls: faller den, se på trafikk og markedsføring først.',
+        'avg_order_value' => 'Omsetning delt på antall ordrer: hva et typisk kjøp er verdt. Øk den med pakker, tilleggsprodukter og en fraktfri-grense like over.',
+        'median_order_value' => 'Midterste ordre: halvparten av ordrene er mindre, halvparten større. Noen få svært store ordrer forvrenger den mindre enn gjennomsnittet.',
+        'cancel_rate' => 'Andel av periodens ordrer som ble kansellert. Stigende andel betyr som regel betalings- eller lagerproblemer: sjekk de kansellerte ordrene.',
+        'units_sold' => 'Totalt antall enheter i alle ordrer i perioden. Sammenlign med omsetningen for å se om du selger flere varer eller dyrere varer.',
+        'avg_items' => 'Hvor mange enheter en gjennomsnittsordre inneholder. Større handlekurv gjør hver levering billigere per enhet: bruk mersalg.',
+        'returning_share' => 'Andel ordrer fra kunder som har bestilt før (samme konto, eller samme e-post for gjester). Gjenkjøp er billigere enn å vinne nye kunder.',
+        'hours_to_ship' => 'Gjennomsnittlig tid fra ordren legges inn til den markeres sendt eller fullført. Treg sending koster gjenkjøp: følg med etter kampanjer.',
+        'canceled_value' => 'Omsetning tapt i kansellerte ordrer i perioden. Penger på bordet: undersøk de største.',
+    ],
 ];

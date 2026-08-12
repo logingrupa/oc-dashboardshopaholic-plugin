@@ -69,4 +69,17 @@
         'hours_to_ship' => 'Hours to ship',
         'canceled_value' => 'Canceled value',
     ],
+    'help' => [
+        'now' => 'This period',
+        'before' => 'Previous period',
+        'orders_period' => 'How many orders customers placed in the selected period. The pulse of the shop: if this drops, look at traffic and marketing first.',
+        'avg_order_value' => 'Turnover divided by orders: what a typical checkout is worth. Grow it with bundles, add-on products and a free-shipping threshold just above it.',
+        'median_order_value' => 'The middle order: half of the orders are smaller, half are bigger. Less distorted by a few very large orders than the average.',
+        'cancel_rate' => 'Share of orders in the period that ended up canceled. A rising rate usually means payment or stock problems: check the canceled orders.',
+        'units_sold' => 'Total product units across all orders in the period. Compare with turnover to see whether you sell more items or pricier items.',
+        'avg_items' => 'How many units the average order contains. Bigger baskets make every delivery cheaper per item: push cross-sells to grow this.',
+        'returning_share' => 'Share of orders placed by customers who ordered before (same account, or the same e-mail for guests). Repeat business is cheaper than winning new customers.',
+        'hours_to_ship' => 'Average time from the order being placed to the moment it is marked sent or completed. Slow shipping costs repeat purchases: watch it after campaigns.',
+        'canceled_value' => 'Turnover lost in canceled orders during the period. Money left on the table: investigate the biggest ones.',
+    ],
 ];

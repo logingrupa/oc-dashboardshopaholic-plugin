@@ -1,0 +1,69 @@
+.dsb-card-help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.45;
+  cursor: help;
+  user-select: none;
+  vertical-align: text-bottom;
+}
+
+.dsb-card-help-icon:hover {
+  opacity: 1;
+}
+
+.dsb-card-help-tip {
+  position: fixed;
+  z-index: 10600;
+  width: 288px;
+  max-width: calc(100vw - 16px);
+  padding: 12px 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #09090b;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px) scale(0.97);
+  transform-origin: top left;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.dsb-card-help-tip.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dsb-card-help-tip strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dsb-card-help-tip span {
+  color: #71717a;
+}
+
+[data-bs-theme='dark'] .dsb-card-help-tip {
+  border-color: #27272a;
+  background: #18181b;
+  color: #fafafa;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme='dark'] .dsb-card-help-tip span {
+  color: #a1a1aa;
+}

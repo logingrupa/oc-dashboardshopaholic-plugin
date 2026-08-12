@@ -4,6 +4,7 @@ use Dashboard\Classes\DashManager;
 use Event;
 use Logingrupa\DashboardShopaholic\Classes\DataSource\OrdersReportDataSource;
 use Logingrupa\DashboardShopaholic\Classes\Event\OrderStatHandler;
+use Logingrupa\DashboardShopaholic\Classes\Helper\CardHelp;
 use Logingrupa\DashboardShopaholic\Console\BackfillOrderStats;
 use Logingrupa\DashboardShopaholic\Models\Settings;
 use Logingrupa\DashboardShopaholic\VueComponents\NewOrdersList;
@@ -54,7 +55,28 @@ class Plugin extends PluginBase
             );
 
             $this->extendPriceTypeBackend();
+            $this->registerCardHelpAssets();
         }
+    }
+
+    /**
+     * Help tooltips on the dashboard cards. The dashboard Vue widgets have no
+     * help extension point, so a script decorates the rendered cards; the
+     * translated payload rides in on the script tag's data attribute.
+     */
+    protected function registerCardHelpAssets(): void
+    {
+        Event::listen('backend.page.beforeDisplay', function ($obController): void {
+            if (!$obController instanceof \Dashboard\Controllers\Index) {
+                return;
+            }
+
+            $obController->addCss('/plugins/logingrupa/dashboardshopaholic/assets/css/card-help.css');
+            $obController->addJs('/plugins/logingrupa/dashboardshopaholic/assets/js/card-help.js', [
+                'id' => 'dashboardshopaholic-card-help',
+                'data-help' => json_encode(CardHelp::makePayload(), JSON_UNESCAPED_UNICODE),
+            ]);
+        });
     }
 
     /**

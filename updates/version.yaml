@@ -23,3 +23,5 @@
 1.5.1:
     - Seed the manager card row - units sold, items per order, returning share, hours to ship, canceled value on the untouched stock dashboard
     - update_dashboard_manager_cards.php
+1.5.2:
+    - Hover help on every dashboard card - live current and previous-period values plus a practical explanation, translated, styled as a hover card
