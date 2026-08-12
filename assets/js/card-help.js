@@ -208,7 +208,16 @@
         });
     });
 
-    obObserver.observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('scroll', removeTip, true);
-    decorateAll();
+    function init() {
+        obObserver.observe(document.body, { childList: true, subtree: true });
+        document.addEventListener('scroll', removeTip, true);
+        decorateAll();
+    }
+
+    // the script tag sits in <head>: body does not exist yet at execute time
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
