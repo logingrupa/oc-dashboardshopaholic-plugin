@@ -33,15 +33,30 @@ class OrdersReportDataSource extends ReportDataSourceBase
     public const PRICE_TYPES_TABLE = 'lovata_shopaholic_price_types';
     public const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';
     public const PAYMENT_METHODS_TABLE = 'lovata_orders_shopaholic_payment_methods';
+    public const SHIPPING_TYPES_TABLE = 'lovata_orders_shopaholic_shipping_types';
 
     public const DIMENSION_STATUS = 'status';
     public const DIMENSION_PAYMENT_METHOD = 'payment_method';
+    public const DIMENSION_SHIPPING_METHOD = 'shipping_method';
+    public const DIMENSION_WEEKDAY = 'weekday';
+    public const DIMENSION_HOUR = 'hour_of_day';
 
     public const METRIC_ORDERS_COUNT = 'orders_count';
     public const METRIC_TURNOVER = 'turnover';
     public const METRIC_PROFIT = 'profit';
     public const METRIC_AVG_ORDER_VALUE = 'avg_order_value';
     public const METRIC_CANCEL_RATE = 'cancel_rate';
+    public const METRIC_CANCELED_VALUE = 'canceled_value';
+    public const METRIC_AVG_ITEMS_PER_ORDER = 'avg_items_per_order';
+    public const METRIC_UNITS_SOLD = 'units_sold';
+    public const METRIC_RETURNING_CUSTOMER_SHARE = 'returning_customer_share';
+    public const METRIC_AVG_HOURS_TO_SHIP = 'avg_hours_to_ship';
+
+    /**
+     * ISO weekday order: WEEKDAY() (MySQL) and shifted strftime (SQLite) both
+     * yield 0 = Monday.
+     */
+    public const WEEKDAY_LABEL_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
     public const DIMENSION_MEDIAN_ORDER_VALUE = 'indicator@median_order_value';
 
@@ -70,6 +85,10 @@ class OrdersReportDataSource extends ReportDataSourceBase
         // the widget's oc_dimension order rule to the metric-totals query where no
         // dimension column is selected - MySQL rejects it with unknown column
         $obData->orderRule ??= new ReportDataOrderRule(ReportDataOrderRule::ATTR_TYPE_DIMENSION);
+
+        if (in_array($sDimensionCode, [self::DIMENSION_WEEKDAY, self::DIMENSION_HOUR], true)) {
+            return $this->fetchExpressionDimensionData($obData);
+        }
 
         $obBuilder = ReportDataQueryBuilder::fromFetchData(
             $obData,
@@ -102,6 +121,24 @@ class OrdersReportDataSource extends ReportDataSourceBase
             self::DIMENSION_PAYMENT_METHOD,
             self::PAYMENT_METHODS_TABLE.'.name',
             trans(self::LANG.'dimension.payment_method')
+        ));
+
+        $this->registerDimension(new ReportDimension(
+            self::DIMENSION_SHIPPING_METHOD,
+            self::SHIPPING_TYPES_TABLE.'.name',
+            trans(self::LANG.'dimension.shipping_method')
+        ));
+
+        $this->registerDimension(new ReportDimension(
+            self::DIMENSION_WEEKDAY,
+            $this->makeWeekdayExpression(),
+            trans(self::LANG.'dimension.weekday')
+        ));
+
+        $this->registerDimension(new ReportDimension(
+            self::DIMENSION_HOUR,
+            $this->makeHourExpression(),
+            trans(self::LANG.'dimension.hour_of_day')
         ));
     }
 
@@ -137,6 +174,48 @@ class OrdersReportDataSource extends ReportDataSourceBase
             ReportMetric::AGGREGATE_AVG,
             ['style' => 'percent', 'maximumFractionDigits' => 1]
         ));
+
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_CANCELED_VALUE,
+            $this->makeCanceledValueExpression(),
+            trans(self::LANG.'metric.canceled_value'),
+            ReportMetric::AGGREGATE_SUM,
+            $this->currencyFormatOptions()
+        ));
+
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_AVG_ITEMS_PER_ORDER,
+            self::STATS_TABLE.'.items_quantity',
+            trans(self::LANG.'metric.avg_items_per_order'),
+            ReportMetric::AGGREGATE_AVG,
+            ['maximumFractionDigits' => 1]
+        ));
+
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_UNITS_SOLD,
+            self::STATS_TABLE.'.items_quantity',
+            trans(self::LANG.'metric.units_sold'),
+            ReportMetric::AGGREGATE_SUM,
+            ['maximumFractionDigits' => 0]
+        ));
+
+        // AVG over the stored 0/1 flag; Intl percent formatting scales client-side
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_RETURNING_CUSTOMER_SHARE,
+            self::STATS_TABLE.'.is_returning',
+            trans(self::LANG.'metric.returning_customer_share'),
+            ReportMetric::AGGREGATE_AVG,
+            ['style' => 'percent', 'maximumFractionDigits' => 1]
+        ));
+
+        // hours_to_ship is precomputed at write time; AVG skips unshipped (null) rows
+        $this->registerMetric(new ReportMetric(
+            self::METRIC_AVG_HOURS_TO_SHIP,
+            self::STATS_TABLE.'.hours_to_ship',
+            trans(self::LANG.'metric.avg_hours_to_ship'),
+            ReportMetric::AGGREGATE_AVG,
+            ['maximumFractionDigits' => 1]
+        ));
     }
 
     /**
@@ -157,6 +236,90 @@ class OrdersReportDataSource extends ReportDataSourceBase
             self::STATS_TABLE,
             implode(',', $arStatusIDList)
         );
+    }
+
+    /**
+     * Order value lost to cancellations: total_price of canceled orders, zero
+     * for everything else, summed by the aggregate.
+     */
+    private function makeCanceledValueExpression(): string
+    {
+        $arStatusIDList = StatusBuckets::getStatusIds(StatusBuckets::CANCELED);
+
+        if (empty($arStatusIDList)) {
+            return '(0)';
+        }
+
+        return sprintf(
+            '(case when %1$s.status_id in (%2$s) then %1$s.total_price else 0 end)',
+            self::STATS_TABLE,
+            implode(',', $arStatusIDList)
+        );
+    }
+
+    /**
+     * ISO weekday of ordered_at as a sortable translated label ("1 Mon".."7 Sun").
+     * MySQL WEEKDAY() is already 0 = Monday; SQLite strftime('%w') starts at
+     * Sunday and gets shifted to match.
+     */
+    private function makeWeekdayExpression(): string
+    {
+        $sWeekdayNumber = Db::getDriverName() === 'sqlite'
+            ? "(cast(strftime('%w', ".self::STATS_TABLE.".ordered_at) as integer) + 6) % 7"
+            : 'WEEKDAY('.self::STATS_TABLE.'.ordered_at)';
+
+        $arCaseList = [];
+        foreach (self::WEEKDAY_LABEL_KEYS as $iWeekdayIndex => $sLabelKey) {
+            $sLabel = ($iWeekdayIndex + 1).' '.trans(self::LANG.'weekday.'.$sLabelKey);
+            $arCaseList[] = sprintf(
+                "when %d then '%s'",
+                $iWeekdayIndex,
+                str_replace("'", "''", $sLabel)
+            );
+        }
+
+        return sprintf('(case %s %s end)', $sWeekdayNumber, implode(' ', $arCaseList));
+    }
+
+    /**
+     * Hour of ordered_at as a zero-padded "HH:00" label - lexicographic order
+     * equals chronological order on both drivers.
+     */
+    private function makeHourExpression(): string
+    {
+        return Db::getDriverName() === 'sqlite'
+            ? "(strftime('%H', ".self::STATS_TABLE.".ordered_at) || ':00')"
+            : "DATE_FORMAT(".self::STATS_TABLE.".ordered_at, '%H:00')";
+    }
+
+    /**
+     * Weekday/hour dimensions use a raw SQL expression as the dimension column.
+     * The stock builders pass that expression through orderBy(), where the SQL
+     * grammar identifier-quotes it - MySQL then fails with unknown column
+     * (SQLite silently orders by a string constant). Same builder, but any
+     * dimension order rule is rebuilt on the oc_dimension select alias.
+     */
+    private function fetchExpressionDimensionData(ReportFetchData $obData): ReportFetchDataResult
+    {
+        $obBuilder = ReportDataQueryBuilder::fromFetchData(
+            $obData,
+            self::STATS_TABLE,
+            self::STATS_TABLE.'.ordered_at'
+        );
+
+        $obQuery = $obBuilder->initQuery();
+
+        if ($obData->orderRule->getDataAttributeType() === ReportDataOrderRule::ATTR_TYPE_DIMENSION) {
+            $obQuery->orders = [];
+            $obQuery->orderByRaw('oc_dimension '.($obData->orderRule->isAscending() ? 'asc' : 'desc'));
+        }
+
+        $arRecordList = $obData->totalsOnly ? [] : $obQuery->get()->all();
+
+        $obResult = new ReportFetchDataResult($arRecordList);
+        $obResult->setMetricTotals($obBuilder->getMetricTotals($obData->metricsConfiguration));
+
+        return $obResult;
     }
 
     private function registerMedianIndicatorDimension(): void
@@ -307,6 +470,15 @@ class OrdersReportDataSource extends ReportDataSourceBase
                 self::PAYMENT_METHODS_TABLE.'.id',
                 '=',
                 self::STATS_TABLE.'.payment_method_id'
+            );
+        }
+
+        if ($obDimension->getCode() === self::DIMENSION_SHIPPING_METHOD) {
+            $obQuery->leftJoin(
+                self::SHIPPING_TYPES_TABLE,
+                self::SHIPPING_TYPES_TABLE.'.id',
+                '=',
+                self::STATS_TABLE.'.shipping_type_id'
             );
         }
     }

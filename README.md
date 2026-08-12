@@ -45,10 +45,10 @@ After install: pick the cost price type in Settings > Catalog configuration > Da
 
 ## What you get
 
-- **Shopaholic Orders data source** for the built-in Indicator / Chart / Table widgets. Dimensions: date, order status, payment method, plus an `indicator@median_order_value` card (median order total for the selected date range). Metrics: Orders, Turnover (incl VAT), Average order value, Cancellation rate, Profit (approx, ex VAT) following the settings cost price type, and a "Profit vs <price type>" metric per active price type so any widget can pick its cost basis on the fly. Metric-based indicator cards respect the dashboard date range and show the previous-period arrow when Compare Totals is on.
+- **Shopaholic Orders data source** for the built-in Indicator / Chart / Table widgets. Dimensions: date, order status, payment method, shipping method, weekday, hour of day, plus an `indicator@median_order_value` card (median order total for the selected date range). Metrics: Orders, Turnover (incl VAT), Average order value, Cancellation rate, Canceled order value, Average items per order, Units sold, Returning customer share (earlier order with the same user, or the same checkout email for guests), Average hours to ship (order creation to the first sent/complete status), Profit (approx, ex VAT) following the settings cost price type, and a "Profit vs <price type>" metric per active price type so any widget can pick its cost basis on the fly. Metric-based indicator cards respect the dashboard date range and show the previous-period arrow when Compare Totals is on.
 - **New Orders widget** - unprocessed orders inside the dashboard interval selection, with customer, total, payment method, linking to the backend order page.
 - **Seeded dashboard** - a migration seeds a global "Shopaholic Dashboard" (period cards: orders, average and median order value, cancel rate; New Orders queue, Turnover & Profit chart, by-status and by-payment tables). A customized layout is never overwritten.
-- **Order stat fact table** (`logingrupa_dashboardshopaholic_order_stats`) - one row per order (order_id, ordered_at, status_id, payment_method_id, total_price), kept in sync by order events.
+- **Order stat fact table** (`logingrupa_dashboardshopaholic_order_stats`) - one row per order (order_id, ordered_at, status_id, payment_method_id, shipping_type_id, total_price, items_quantity, positions_count, user_id, is_returning, shipped_at, hours_to_ship), kept in sync by order events. shipped_at is stamped once, when the order first reaches a sent/complete status, and never restamped; for pre-existing orders the backfill approximates it with the order's last update time.
 
 ## Accuracy model - read this
 
@@ -59,7 +59,7 @@ After install: pick the cost price type in Settings > Catalog configuration > Da
 
 - **Profit cost basis**: Settings > Catalog configuration > Dashboard - pick the cost price type (e.g. a distributor price type). The plain Profit metric follows it; unconfigured it reads zero.
 - **Cost VAT flag**: Shopaholic > Price Types - each price type has a "Prices include VAT (gross)" switch (also a list column). Wrong flag = profit off by exactly the VAT amount.
-- **Status buckets** map by status CODE: `new*` = Unprocessed (feeds the New Orders widget), `canceled` = Canceled (feeds the Cancellation rate metric) (`Classes\Helper\StatusBuckets`).
+- **Status buckets** map by status CODE: `new*` = Unprocessed (feeds the New Orders widget), `canceled` = Canceled (feeds the Cancellation rate and Canceled order value metrics), `sent`/`complete` = Shipped (stamps shipped_at for the Average hours to ship metric) (`Classes\Helper\StatusBuckets`).
 
 ## Permissions
 

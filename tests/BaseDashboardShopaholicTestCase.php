@@ -53,9 +53,11 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
     {
         require_once __DIR__.'/../updates/create_order_stats_table.php';
         require_once __DIR__.'/../updates/add_order_positions_order_id_index.php';
+        require_once __DIR__.'/../updates/add_order_stats_manager_columns.php';
 
         (new Logingrupa\DashboardShopaholic\Updates\CreateOrderStatsTable())->up();
         (new Logingrupa\DashboardShopaholic\Updates\AddOrderPositionsOrderIdIndex())->up();
+        (new Logingrupa\DashboardShopaholic\Updates\AddOrderStatsManagerColumns())->up();
     }
 
     protected function createLovataStubTables(): void
@@ -92,6 +94,12 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
         });
 
         $this->createStubTable('lovata_orders_shopaholic_payment_methods', function (Blueprint $obTable) {
+            $obTable->increments('id');
+            $obTable->string('name')->nullable();
+            $obTable->string('code')->nullable();
+        });
+
+        $this->createStubTable('lovata_orders_shopaholic_shipping_types', function (Blueprint $obTable) {
             $obTable->increments('id');
             $obTable->string('name')->nullable();
             $obTable->string('code')->nullable();
@@ -167,6 +175,8 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             'status_id' => $arOrder['status_id'] ?? 1,
             'order_number' => $arOrder['order_number'] ?? ('T-'.mt_rand(1000, 9999)),
             'payment_method_id' => $arOrder['payment_method_id'] ?? null,
+            'shipping_type_id' => $arOrder['shipping_type_id'] ?? null,
+            'user_id' => $arOrder['user_id'] ?? null,
             'property' => $arOrder['property'] ?? null,
             'created_at' => $sCreatedAt,
             'updated_at' => $sCreatedAt,
@@ -177,6 +187,12 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             'ordered_at' => $sCreatedAt,
             'status_id' => $arOrder['status_id'] ?? 1,
             'payment_method_id' => $arOrder['payment_method_id'] ?? null,
+            'shipping_type_id' => $arOrder['shipping_type_id'] ?? null,
+            'user_id' => $arOrder['user_id'] ?? null,
+            'items_quantity' => $arOrder['items_quantity'] ?? 0,
+            'positions_count' => $arOrder['positions_count'] ?? 0,
+            'is_returning' => $arOrder['is_returning'] ?? 0,
+            'hours_to_ship' => $arOrder['hours_to_ship'] ?? null,
             'total_price' => $fTotalPrice,
         ]);
 

@@ -27,7 +27,8 @@ Lovata.OrdersShopaholic. README.md documents the metrics.
                        seed_shopaholic_dashboard (seeds default dashboard layout),
                        add_price_types_vat_flag, update_dashboard_period_cards
                        (swaps stock layout to period cards, strips dead bucket widgets
-                       from customized layouts)
+                       from customized layouts), add_order_stats_manager_columns
+                       (shipping/basket/returning/time-to-ship columns)
 
 Plugin boot() extends Lovata\Shopaholic\Models\PriceType with price_includes_vat + form injection.
 
@@ -66,3 +67,8 @@ Root CLAUDE.md governs: Hungarian notation, Store -> Collection -> Item read pat
   The writer is updateOrCreate-idempotent, so a died run is safely re-run in full.
 - On nailscosmetics.lv2 the default `php` CLI is 8.3 and the app requires 8.4
   (symfony 8 + customxmlimportpricing pin) - always `php8.4` there.
+- Weekday/hour dimensions are raw SQL expressions. The stock report builders
+  identifier-quote the dimension column in ORDER BY - MySQL throws unknown
+  column, SQLite silently sorts by a string constant. fetchExpressionDimensionData
+  rebuilds the order on the oc_dimension alias; route any new expression
+  dimension through it.

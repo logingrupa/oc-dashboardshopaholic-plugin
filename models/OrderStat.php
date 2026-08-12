@@ -27,11 +27,23 @@ class OrderStat extends Model
         'status_id',
         'payment_method_id',
         'total_price',
+        'shipping_type_id',
+        'items_quantity',
+        'positions_count',
+        'user_id',
+        'is_returning',
+        'shipped_at',
+        'hours_to_ship',
     ];
 
     protected $casts = [
         'order_id' => 'integer',
         'ordered_at' => 'datetime',
         'total_price' => 'float',
+        'items_quantity' => 'integer',
+        'positions_count' => 'integer',
+        'is_returning' => 'boolean',
+        'shipped_at' => 'datetime',
+        'hours_to_ship' => 'float',
     ];
 }

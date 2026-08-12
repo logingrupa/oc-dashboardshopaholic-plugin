@@ -255,6 +255,122 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->assertSame('0.00 EUR', $arRowList[0]->oc_metric_value);
     }
 
+    public function testWeekdayDimensionAggregatesAndOrdersMondayFirst(): void
+    {
+        $this->seedBaseData();
+
+        // Sunday seeded FIRST: broken dimension ordering (SQLite silently
+        // sorts by a string constant) would keep insertion order
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-10 12:00:00'], 50.00);
+
+        $arRowList = $this->fetchRowList('weekday', ['turnover']);
+
+        $this->assertCount(2, $arRowList);
+        $sMondayLabel = '1 '.trans('logingrupa.dashboardshopaholic::lang.weekday.mon');
+        $sSundayLabel = '7 '.trans('logingrupa.dashboardshopaholic::lang.weekday.sun');
+        $this->assertSame($sMondayLabel, $arRowList[0]->oc_dimension);
+        $this->assertEqualsWithDelta(150.0, (float) $arRowList[0]->oc_metric_turnover, 0.001);
+        $this->assertSame($sSundayLabel, $arRowList[1]->oc_dimension);
+        $this->assertEqualsWithDelta(30.0, (float) $arRowList[1]->oc_metric_turnover, 0.001);
+    }
+
+    public function testHourDimensionGroupsByHourChronologically(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 13:05:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 09:15:00'], 60.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 09:45:00'], 40.00);
+
+        $arRowList = $this->fetchRowList('hour_of_day', ['turnover', 'orders_count']);
+
+        $this->assertCount(2, $arRowList);
+        $this->assertSame('09:00', $arRowList[0]->oc_dimension);
+        $this->assertEqualsWithDelta(100.0, (float) $arRowList[0]->oc_metric_turnover, 0.001);
+        $this->assertSame(2, (int) $arRowList[0]->oc_metric_orders_count);
+        $this->assertSame('13:00', $arRowList[1]->oc_dimension);
+        $this->assertEqualsWithDelta(40.0, (float) $arRowList[1]->oc_metric_turnover, 0.001);
+    }
+
+    public function testCanceledValueMetricSumsOnlyCanceledOrdersInRange(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-02 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 20.00);
+        // Canceled outside the range must not add up
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['canceled_value']);
+
+        $this->assertEqualsWithDelta(50.0, (float) $arTotalMap['canceled_value'], 0.001);
+    }
+
+    public function testShippingMethodDimensionJoinsShippingTypeNames(): void
+    {
+        $this->seedBaseData();
+        Db::table('lovata_orders_shopaholic_shipping_types')->insert([
+            ['id' => 1, 'name' => 'Omniva', 'code' => 'omniva'],
+            ['id' => 2, 'name' => 'DPD', 'code' => 'dpd'],
+        ]);
+
+        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 60.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 2, 'created_at' => '2026-08-02 11:00:00'], 15.00);
+
+        $arRowMap = $this->fetchRowsByDimension('shipping_method', ['turnover']);
+
+        $this->assertEqualsWithDelta(100.0, (float) $arRowMap['Omniva']->oc_metric_turnover, 0.001);
+        $this->assertEqualsWithDelta(15.0, (float) $arRowMap['DPD']->oc_metric_turnover, 0.001);
+    }
+
+    public function testItemsMetricsAverageAndUnitsSold(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 2, 'created_at' => '2026-08-01 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 4, 'created_at' => '2026-08-02 10:00:00'], 90.00);
+        // Outside the range must not count
+        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 99, 'created_at' => '2026-07-01 10:00:00'], 10.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['avg_items_per_order', 'units_sold']);
+
+        $this->assertEqualsWithDelta(3.0, (float) $arTotalMap['avg_items_per_order'], 0.001);
+        $this->assertEqualsWithDelta(6.0, (float) $arTotalMap['units_sold'], 0.001);
+    }
+
+    public function testReturningCustomerShareAveragesStoredFlag(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 1, 'created_at' => '2026-08-01 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-03 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-04 10:00:00'], 50.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['returning_customer_share']);
+
+        // Intl percent formatting scales client-side - raw share here
+        $this->assertEqualsWithDelta(0.25, (float) $arTotalMap['returning_customer_share'], 0.001);
+    }
+
+    public function testAvgHoursToShipSkipsUnshippedOrders(): void
+    {
+        $this->seedBaseData();
+
+        $this->seedOrderWithStat(['status_id' => 3, 'hours_to_ship' => 24.0, 'created_at' => '2026-08-01 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 8, 'hours_to_ship' => 48.0, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        // Not shipped yet - null must not dilute the average
+        $this->seedOrderWithStat(['status_id' => 1, 'hours_to_ship' => null, 'created_at' => '2026-08-03 10:00:00'], 50.00);
+
+        $arTotalMap = $this->fetchMetricTotals(['avg_hours_to_ship']);
+
+        $this->assertEqualsWithDelta(36.0, (float) $arTotalMap['avg_hours_to_ship'], 0.001);
+    }
+
     /**
      * Median card value for the August 2026 window.
      */
@@ -295,6 +411,22 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         }
 
         return $obDataSource->getData($obData)->getMetricTotals();
+    }
+
+    /**
+     * Fetch rows for the August 2026 window in delivered order.
+     */
+    private function fetchRowList(string $sDimensionCode, array $arMetricCodeList): array
+    {
+        $obDataSource = new OrdersReportDataSource();
+        $obData = $this->makeFetchData(
+            $sDimensionCode,
+            $arMetricCodeList,
+            Carbon::parse('2026-08-01'),
+            Carbon::parse('2026-08-31')
+        );
+
+        return $obDataSource->getData($obData)->getRows();
     }
 
     /**
