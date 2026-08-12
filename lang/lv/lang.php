@@ -63,5 +63,10 @@
         'cancel_rate' => 'Atcelto īpatsvars',
         'avg_order_value' => 'Vidējais grozs',
         'median_order_value' => 'Groza mediāna',
+        'units_sold' => 'Pārdotās vienības',
+        'avg_items' => 'Preces pasūtījumā',
+        'returning_share' => 'Atkārtotie klienti',
+        'hours_to_ship' => 'Nosūtīšanas laiks (h)',
+        'canceled_value' => 'Atcelto vērtība',
     ],
 ];

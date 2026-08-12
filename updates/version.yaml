@@ -20,3 +20,6 @@
 1.5.0:
     - Store-manager stats - weekday, hour-of-day and shipping-method dimensions, canceled order value, items per order, units sold, returning-customer share, hours to ship
     - add_order_stats_manager_columns.php
+1.5.1:
+    - Seed the manager card row - units sold, items per order, returning share, hours to ship, canceled value on the untouched stock dashboard
+    - update_dashboard_manager_cards.php

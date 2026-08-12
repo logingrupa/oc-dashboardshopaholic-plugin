@@ -63,5 +63,10 @@
         'cancel_rate' => 'Cancellation rate',
         'avg_order_value' => 'Average order value',
         'median_order_value' => 'Median order value',
+        'units_sold' => 'Units sold',
+        'avg_items' => 'Items per order',
+        'returning_share' => 'Returning customers',
+        'hours_to_ship' => 'Hours to ship',
+        'canceled_value' => 'Canceled value',
     ],
 ];

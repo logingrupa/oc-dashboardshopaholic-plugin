@@ -63,5 +63,10 @@
         'cancel_rate' => 'Kanselleringsandel',
         'avg_order_value' => 'Gjennomsnittlig ordreverdi',
         'median_order_value' => 'Median ordreverdi',
+        'units_sold' => 'Solgte enheter',
+        'avg_items' => 'Varer per ordre',
+        'returning_share' => 'Tilbakevendende kunder',
+        'hours_to_ship' => 'Timer til sending',
+        'canceled_value' => 'Kansellert verdi',
     ],
 ];

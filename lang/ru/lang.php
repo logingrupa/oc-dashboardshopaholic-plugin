@@ -63,5 +63,10 @@
         'cancel_rate' => 'Доля отмен',
         'avg_order_value' => 'Средний чек',
         'median_order_value' => 'Медианный чек',
+        'units_sold' => 'Продано единиц',
+        'avg_items' => 'Товаров в заказе',
+        'returning_share' => 'Повторные клиенты',
+        'hours_to_ship' => 'Время отправки (ч)',
+        'canceled_value' => 'Стоимость отмен',
     ],
 ];

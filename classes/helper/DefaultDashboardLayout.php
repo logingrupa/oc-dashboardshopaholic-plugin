@@ -29,6 +29,40 @@ class DefaultDashboardLayout
                 self::makeMetricIndicator(1, 'cancel_rate', self::LANG.'widget.cancel_rate', 'ph ph-x-circle', OrdersReportDataSource::METRIC_CANCEL_RATE, 5),
             ]],
             ['widgets' => [
+                self::makeMetricIndicator(2, 'units_sold', self::LANG.'widget.units_sold', 'ph ph-package', OrdersReportDataSource::METRIC_UNITS_SOLD, 4),
+                self::makeMetricIndicator(2, 'avg_items_per_order', self::LANG.'widget.avg_items', 'ph ph-basket', OrdersReportDataSource::METRIC_AVG_ITEMS_PER_ORDER, 4),
+                self::makeMetricIndicator(2, 'returning_customer_share', self::LANG.'widget.returning_share', 'ph ph-repeat', OrdersReportDataSource::METRIC_RETURNING_CUSTOMER_SHARE, 4),
+                self::makeMetricIndicator(2, 'avg_hours_to_ship', self::LANG.'widget.hours_to_ship', 'ph ph-truck', OrdersReportDataSource::METRIC_AVG_HOURS_TO_SHIP, 4),
+                self::makeMetricIndicator(2, 'canceled_value', self::LANG.'widget.canceled_value', 'ph ph-trend-down', OrdersReportDataSource::METRIC_CANCELED_VALUE, 4),
+            ]],
+            ['widgets' => [
+                self::makeNewOrdersWidget(3),
+                self::makeTurnoverChart(3),
+            ]],
+            ['widgets' => [
+                self::makeTable(4, 'by_status_table', self::LANG.'widget.by_status', 'status'),
+                self::makeTable(4, 'by_payment_table', self::LANG.'widget.by_payment', 'payment_method'),
+            ]],
+        ];
+    }
+
+    /**
+     * The 1.4.0 stock layout (period cards, no manager row), kept ONLY so the
+     * manager-cards update migration can recognize a dashboard nobody
+     * customized and swap it wholesale.
+     *
+     * @return array<int, array{widgets: array<int, array<string, mixed>>}>
+     */
+    public static function makePeriodCardsDefinition(): array
+    {
+        return [
+            ['widgets' => [
+                self::makeMetricIndicator(1, 'orders_period', self::LANG.'widget.orders_period', 'ph ph-shopping-cart', OrdersReportDataSource::METRIC_ORDERS_COUNT, 5),
+                self::makeMetricIndicator(1, 'avg_order_value', self::LANG.'widget.avg_order_value', 'ph ph-coins', OrdersReportDataSource::METRIC_AVG_ORDER_VALUE, 5),
+                self::makeMedianIndicator(1, 5),
+                self::makeMetricIndicator(1, 'cancel_rate', self::LANG.'widget.cancel_rate', 'ph ph-x-circle', OrdersReportDataSource::METRIC_CANCEL_RATE, 5),
+            ]],
+            ['widgets' => [
                 self::makeNewOrdersWidget(2),
                 self::makeTurnoverChart(2),
             ]],
