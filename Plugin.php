@@ -67,7 +67,11 @@ class Plugin extends PluginBase
     protected function registerCardHelpAssets(): void
     {
         Event::listen('backend.page.beforeDisplay', function ($obController): void {
-            if (!$obController instanceof \Dashboard\Controllers\Index) {
+            // Backend\Controllers\Index serves the /admin home dashboard,
+            // Dashboard\Controllers\Index the full-screen dashboards
+            if (!$obController instanceof \Backend\Controllers\Index
+                && !$obController instanceof \Dashboard\Controllers\Index
+            ) {
                 return;
             }
 

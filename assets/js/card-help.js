@@ -82,9 +82,14 @@
     }
 
     function formatLike(obParsed, fNumber) {
-        var sFormatted = fNumber.toFixed(obParsed.decimals);
-        if (obParsed.separator === ',') {
-            sFormatted = sFormatted.replace('.', ',');
+        var sFormatted;
+        try {
+            sFormatted = fNumber.toLocaleString(document.documentElement.lang || undefined, {
+                minimumFractionDigits: obParsed.decimals,
+                maximumFractionDigits: obParsed.decimals
+            });
+        } catch (obError) {
+            sFormatted = fNumber.toFixed(obParsed.decimals);
         }
         return obParsed.prefix + sFormatted + obParsed.suffix;
     }
@@ -103,6 +108,8 @@
             return sLine;
         }
 
+        // The marker shows the ABSOLUTE difference formatted like the metric
+        // ("940", "NOK 13.00", "0.1%"), so previous = current -/+ difference
         var obDiffSpan = obDiff.querySelector('span');
         var sDiffAbs = obDiffSpan === null ? '' : obDiffSpan.textContent.trim();
         var bNegative = obDiff.classList.contains('negative');
@@ -110,13 +117,13 @@
         var sSigned = (bNeutral ? '' : (bNegative ? '-' : '+')) + sDiffAbs;
 
         var sBefore = sSigned;
-        var fPercent = parseFloat(sDiffAbs.replace(',', '.'));
-        var obParsed = parseValue(sValue);
-        if (!isNaN(fPercent) && obParsed !== null) {
-            var fFactor = 1 + (bNegative ? -fPercent : fPercent) / 100;
-            if (fFactor > 0) {
-                sBefore = '≈' + formatLike(obParsed, obParsed.number / fFactor) + ' (' + sSigned + ')';
-            }
+        var obValueParsed = parseValue(sValue);
+        var obDiffParsed = parseValue(sDiffAbs);
+        if (obValueParsed !== null && obDiffParsed !== null) {
+            var fPrevious = bNeutral
+                ? obValueParsed.number
+                : obValueParsed.number + (bNegative ? obDiffParsed.number : -obDiffParsed.number);
+            sBefore = formatLike(obValueParsed, fPrevious) + ' (' + sSigned + ')';
         }
 
         return sLine + ' · ' + obConfig.before + ': ' + sBefore;
