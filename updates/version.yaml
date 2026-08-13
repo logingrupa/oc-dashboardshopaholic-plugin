@@ -30,3 +30,5 @@
     - fix_seeded_dashboard_owner.php
 1.5.4:
     - Owner resolver survives v1-imported stores - is_superuser holds 0/1/2 there, the boolean bind skipped the 2s; activated superusers now preferred
+1.5.5:
+    - Legacy report widget AJAX fix - buttons inside static dashboard widgets post no _dash_definition, so the Dash widget never bound and handlers failed with "widget has not been bound"; a backend.ajax.beforeRunHandler listener recovers the dashboard from the widget alias and binds it

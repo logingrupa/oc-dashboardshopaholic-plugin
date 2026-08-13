@@ -3,6 +3,7 @@
 use Dashboard\Classes\DashManager;
 use Event;
 use Logingrupa\DashboardShopaholic\Classes\DataSource\OrdersReportDataSource;
+use Logingrupa\DashboardShopaholic\Classes\Event\LegacyReportWidgetBinder;
 use Logingrupa\DashboardShopaholic\Classes\Event\OrderStatHandler;
 use Logingrupa\DashboardShopaholic\Classes\Helper\CardHelp;
 use Logingrupa\DashboardShopaholic\Console\BackfillOrderStats;
@@ -56,6 +57,12 @@ class Plugin extends PluginBase
 
             $this->extendPriceTypeBackend();
             $this->registerCardHelpAssets();
+
+            // Legacy report widget buttons post no _dash_definition, so the
+            // Dash widget never binds and their AJAX handlers 500 - see binder
+            Event::listen('backend.ajax.beforeRunHandler', function ($obController, string $sHandler): void {
+                (new LegacyReportWidgetBinder())->bindDashboardForHandler($obController, $sHandler);
+            });
         }
     }
 
