@@ -28,3 +28,5 @@
 1.5.3:
     - Seeded dashboard owned by the first superuser - CLI-seeded row was invisible in the Dashboards manage list, impossible to reorder
     - fix_seeded_dashboard_owner.php
+1.5.4:
+    - Owner resolver survives v1-imported stores - is_superuser holds 0/1/2 there, the boolean bind skipped the 2s; activated superusers now preferred

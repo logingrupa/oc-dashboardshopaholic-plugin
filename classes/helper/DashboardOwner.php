@@ -16,7 +16,12 @@ class DashboardOwner
 {
     public static function resolveUserId(): ?int
     {
-        $mUserId = BackendUser::where('is_superuser', true)->orderBy('id')->value('id')
+        // v1-imported stores hold 0/1/2 in is_superuser - a boolean bind (= 1)
+        // would skip the 2s. Prefer activated superusers, lowest id wins.
+        $mUserId = BackendUser::where('is_superuser', '!=', 0)
+            ->orderByDesc('is_activated')
+            ->orderBy('id')
+            ->value('id')
             ?? BackendUser::orderBy('id')->value('id');
 
         return is_numeric($mUserId) ? (int) $mUserId : null;
