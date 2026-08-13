@@ -1,6 +1,7 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
 use Dashboard\Models\Dashboard;
+use Logingrupa\DashboardShopaholic\Classes\Helper\DashboardOwner;
 use Logingrupa\DashboardShopaholic\Classes\Helper\DefaultDashboardLayout;
 use October\Rain\Database\Updates\Migration;
 
@@ -32,6 +33,10 @@ class SeedShopaholicDashboard extends Migration
             $obDashboard->default_end = 'today';
             $obDashboard->default_interval = 'day';
             $obDashboard->default_compare = 'prev-period';
+            // CLI seeding has no signed-in user; without an owner the row is
+            // invisible in the backend Dashboards manage list
+            $obDashboard->created_user_id = DashboardOwner::resolveUserId();
+            $obDashboard->updated_user_id = $obDashboard->created_user_id;
         }
 
         // Never clobber a layout the user already saved

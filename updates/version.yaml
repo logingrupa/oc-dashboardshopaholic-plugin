@@ -25,3 +25,6 @@
     - update_dashboard_manager_cards.php
 1.5.2:
     - Hover help on every dashboard card - live current and previous-period values plus a practical explanation, translated, styled as a hover card
+1.5.3:
+    - Seeded dashboard owned by the first superuser - CLI-seeded row was invisible in the Dashboards manage list, impossible to reorder
+    - fix_seeded_dashboard_owner.php
