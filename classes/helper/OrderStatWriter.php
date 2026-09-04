@@ -50,7 +50,8 @@ class OrderStatWriter
                     'ordered_at' => $obOrderedAt,
                     'status_id' => self::intOrNull($obOrder->status_id),
                     'payment_method_id' => self::intOrNull($obOrder->payment_method_id),
-                    'total_price' => (float) $obProcessor->getTotalPrice()->price_value,
+                    // goods only: shipping is a pass-through cost, not turnover
+                    'total_price' => (float) $obProcessor->getPositionTotalPrice()->price_value,
                     'shipping_type_id' => self::intOrNull($obOrder->shipping_type_id),
                     'items_quantity' => $iItemsQuantity,
                     'positions_count' => $iPositionsCount,

@@ -53,7 +53,7 @@ After install: pick the cost price type in Settings > Catalog configuration > Da
 
 ## Accuracy model - read this
 
-- **Turnover is exact.** Order totals are computed by the Lovata promo mechanism processor (position discounts, free shipping, campaign prices) once at order time and persisted to the fact table. Raw SQL over order positions would be wrong - discounts live in mechanism rows, not position prices.
+- **Turnover is exact and excludes shipping.** Goods totals are computed by the Lovata promo mechanism processor (position discounts, campaign prices) once at order time and persisted to the fact table; the shipping fee is a pass-through cost and stays out of every money metric. Raw SQL over order positions would be wrong - discounts live in mechanism rows, not position prices.
 - **Profit is an estimate.** Profit = net position revenue minus the CURRENT price of the chosen cost price type. Revenue VAT is stripped per position via `tax_percent` - the per-product VAT rate Shopaholic snapshots from the taxes setup at order time. If the cost price type is flagged "prices include VAT", its VAT is stripped the same way. Profit shifts whenever the price import updates cost prices, and positions without a cost price row contribute zero (missing data never inflates profit).
 
 ## Configure

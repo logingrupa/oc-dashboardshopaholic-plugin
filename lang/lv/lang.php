@@ -31,7 +31,7 @@
     ],
     'metric' => [
         'orders' => 'Pasūtījumi',
-        'turnover' => 'Apgrozījums (ar PVN)',
+        'turnover' => 'Apgrozījums (ar PVN, bez piegādes)',
         'profit' => 'Peļņa (aptuveni, bez PVN)',
         'profit_vs' => 'Peļņa pret :name',
         'avg_order_value' => 'Vidējā pasūtījuma vērtība',

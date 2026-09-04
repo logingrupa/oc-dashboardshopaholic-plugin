@@ -6,7 +6,8 @@ use Model;
  * OrderStat is a denormalized reporting row per order.
  *
  * Revenue on orders is NOT stored on the order record - it is computed by the
- * promo mechanism processor (discounts, free shipping, campaign prices).
+ * promo mechanism processor (position discounts, campaign prices). total_price
+ * is the goods total after discounts, shipping excluded.
  * This table persists the processor result once at write time so dashboard
  * queries stay exact and aggregate in plain SQL.
  */

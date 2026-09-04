@@ -31,7 +31,7 @@
     ],
     'metric' => [
         'orders' => 'Orders',
-        'turnover' => 'Turnover (incl VAT)',
+        'turnover' => 'Turnover (incl VAT, excl shipping)',
         'profit' => 'Profit (approx, ex VAT)',
         'profit_vs' => 'Profit vs :name',
         'avg_order_value' => 'Average order value',

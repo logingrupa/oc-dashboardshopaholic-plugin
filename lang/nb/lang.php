@@ -31,7 +31,7 @@
     ],
     'metric' => [
         'orders' => 'Ordrer',
-        'turnover' => 'Omsetning (inkl. MVA)',
+        'turnover' => 'Omsetning (inkl. MVA, ekskl. frakt)',
         'profit' => 'Fortjeneste (ca., ekskl. MVA)',
         'profit_vs' => 'Fortjeneste mot :name',
         'avg_order_value' => 'Gjennomsnittlig ordreverdi',
