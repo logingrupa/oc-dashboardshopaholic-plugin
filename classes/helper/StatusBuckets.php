@@ -13,17 +13,21 @@ class StatusBuckets
     public const UNPROCESSED = 'unprocessed';
     public const CANCELED = 'canceled';
     public const SHIPPED = 'shipped';
+    public const PAID = 'paid';
 
     public const BUCKET_LIST = [
         self::UNPROCESSED,
         self::CANCELED,
         self::SHIPPED,
+        self::PAID,
     ];
 
+    // paid = money metrics: payment confirmed, shipped or closed
     public const STATUS_CODE_MAP = [
         self::UNPROCESSED => ['new', 'new-payment-received', 'new-payment-error', 'new-payment-canceled'],
         self::CANCELED => ['canceled'],
         self::SHIPPED => ['sent', 'complete'],
+        self::PAID => ['new-payment-received', 'sent', 'complete'],
     ];
 
     public const STATUSES_TABLE = 'lovata_orders_shopaholic_statuses';

@@ -9,35 +9,49 @@ use Logingrupa\DashboardShopaholic\Classes\DataSource\OrdersReportDataSource;
  */
 class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
 {
-    public function testTurnoverAndCountGroupByStatus(): void
+    /**
+     * Orders count sees every status; turnover only the paid bucket
+     * (payment received, sent, complete). Unpaid and canceled rows sum to zero.
+     */
+    public function testTurnoverCountsPaidOrdersOnlyWhileCountKeepsAll(): void
     {
         $this->seedBaseData();
 
         $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.50);
         $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 49.50);
+        $this->seedOrderWithStat(['status_id' => 5, 'created_at' => '2026-08-02 11:00:00'], 30.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-03 10:00:00'], 200.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-03 11:00:00'], 70.00);
         $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 12:00:00'], 10.00);
 
         $arRowMap = $this->fetchRowsByDimension('status', ['orders_count', 'turnover']);
 
         $this->assertSame(2, (int) $arRowMap['Order received']->oc_metric_orders_count);
-        $this->assertEqualsWithDelta(150.0, (float) $arRowMap['Order received']->oc_metric_turnover, 0.001);
+        $this->assertEqualsWithDelta(0.0, (float) $arRowMap['Order received']->oc_metric_turnover, 0.001);
+        $this->assertEqualsWithDelta(30.0, (float) $arRowMap['Payment received']->oc_metric_turnover, 0.001);
         $this->assertSame(1, (int) $arRowMap['Sent']->oc_metric_orders_count);
         $this->assertEqualsWithDelta(200.0, (float) $arRowMap['Sent']->oc_metric_turnover, 0.001);
+        $this->assertEqualsWithDelta(70.0, (float) $arRowMap['Completed']->oc_metric_turnover, 0.001);
         $this->assertSame(1, (int) $arRowMap['Canceled']->oc_metric_orders_count);
+        $this->assertEqualsWithDelta(0.0, (float) $arRowMap['Canceled']->oc_metric_turnover, 0.001);
         $this->assertArrayNotHasKey('Waiting for payment', $arRowMap);
+
+        $arTotalMap = $this->fetchMetricTotals(['orders_count', 'turnover']);
+
+        $this->assertSame(6, (int) $arTotalMap['orders_count']);
+        $this->assertEqualsWithDelta(300.0, (float) $arTotalMap['turnover'], 0.001);
     }
 
     public function testDateRangeExcludesOutsideOrders(): void
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-07-01 10:00:00'], 999.00);
 
         $arRowMap = $this->fetchRowsByDimension('status', ['turnover']);
 
-        $this->assertEqualsWithDelta(100.0, (float) $arRowMap['Order received']->oc_metric_turnover, 0.001);
+        $this->assertEqualsWithDelta(100.0, (float) $arRowMap['Completed']->oc_metric_turnover, 0.001);
     }
 
     public function testStatusDimensionJoinsStatusNames(): void
@@ -56,9 +70,9 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'payment_method_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 60.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'payment_method_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 40.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'payment_method_id' => 2, 'created_at' => '2026-08-02 11:00:00'], 15.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'payment_method_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 60.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'payment_method_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'payment_method_id' => 2, 'created_at' => '2026-08-02 11:00:00'], 15.00);
 
         $arRowMap = $this->fetchRowsByDimension('payment_method', ['turnover']);
 
@@ -71,7 +85,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->seedBaseData();
         $this->configureCostPriceType(3, false);
 
-        $iOrderID = $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 302.50);
+        $iOrderID = $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 302.50);
 
         // Position A: 121.00 gross at 21% VAT -> 100.00 net, cost 60.00 -> margin 40.00 x 2 = 80.00
         $this->seedPosition($iOrderID, 11, 121.00, 2, 21.0);
@@ -82,7 +96,21 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
 
         $arRowMap = $this->fetchRowsByDimension('status', ['profit']);
 
-        $this->assertEqualsWithDelta(80.0, (float) $arRowMap['Order received']->oc_metric_profit, 0.001);
+        $this->assertEqualsWithDelta(80.0, (float) $arRowMap['Completed']->oc_metric_profit, 0.001);
+    }
+
+    public function testProfitIgnoresUnpaidOrders(): void
+    {
+        $this->seedBaseData();
+        $this->configureCostPriceType(3, false);
+
+        $iOrderID = $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 121.00);
+        $this->seedPosition($iOrderID, 11, 121.00, 1, 21.0);
+        $this->seedCostPrice(11, 3, 60.00);
+
+        $arRowMap = $this->fetchRowsByDimension('status', ['profit']);
+
+        $this->assertEqualsWithDelta(0.0, (float) $arRowMap['Order received']->oc_metric_profit, 0.001);
     }
 
     public function testProfitStripsVatFromGrossCostPriceType(): void
@@ -90,7 +118,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->seedBaseData();
         $this->configureCostPriceType(3, true);
 
-        $iOrderID = $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 121.00);
+        $iOrderID = $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 121.00);
 
         // Gross 121.00 -> net 100.00; gross cost 72.60 -> net cost 60.00; margin 40.00
         $this->seedPosition($iOrderID, 11, 121.00, 1, 21.0);
@@ -98,7 +126,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
 
         $arRowMap = $this->fetchRowsByDimension('status', ['profit']);
 
-        $this->assertEqualsWithDelta(40.0, (float) $arRowMap['Order received']->oc_metric_profit, 0.001);
+        $this->assertEqualsWithDelta(40.0, (float) $arRowMap['Completed']->oc_metric_profit, 0.001);
     }
 
     public function testPerPriceTypeProfitMetricUsesOwnVatFlag(): void
@@ -109,7 +137,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
             'id' => 3, 'active' => 1, 'name' => 'Vairum', 'code' => 'vairum', 'price_includes_vat' => 1,
         ]);
 
-        $iOrderID = $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 121.00);
+        $iOrderID = $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 121.00);
 
         // Gross 121.00 -> net 100.00; gross cost 72.60 -> net cost 60.00; margin 40.00
         $this->seedPosition($iOrderID, 11, 121.00, 1, 21.0);
@@ -117,20 +145,20 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
 
         $arRowMap = $this->fetchRowsByDimension('status', ['profit_3']);
 
-        $this->assertEqualsWithDelta(40.0, (float) $arRowMap['Order received']->oc_metric_profit_3, 0.001);
+        $this->assertEqualsWithDelta(40.0, (float) $arRowMap['Completed']->oc_metric_profit_3, 0.001);
     }
 
     public function testProfitIsZeroWithoutConfiguredCostPriceType(): void
     {
         $this->seedBaseData();
 
-        $iOrderID = $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 121.00);
+        $iOrderID = $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 121.00);
         $this->seedPosition($iOrderID, 11, 121.00, 1, 21.0);
 
         // Metric always registered - saved widgets referencing it never break
         $arRowMap = $this->fetchRowsByDimension('status', ['profit']);
 
-        $this->assertEqualsWithDelta(0.0, (float) $arRowMap['Order received']->oc_metric_profit, 0.001);
+        $this->assertEqualsWithDelta(0.0, (float) $arRowMap['Completed']->oc_metric_profit, 0.001);
     }
 
     /**
@@ -158,7 +186,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 100.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
 
         $obDataSource = new OrdersReportDataSource();
@@ -184,21 +212,23 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 100.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        // canceled and unpaid rows are skipped, not averaged in as zeros
         $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 30.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 11:00:00'], 1000.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-07-01 10:00:00'], 999.00);
 
         $arTotalMap = $this->fetchMetricTotals(['avg_order_value']);
 
-        $this->assertEqualsWithDelta(60.0, (float) $arTotalMap['avg_order_value'], 0.001);
+        $this->assertEqualsWithDelta(75.0, (float) $arTotalMap['avg_order_value'], 0.001);
     }
 
     public function testCancelRateTotalsOverRange(): void
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 100.00);
         $this->seedOrderWithStat(['status_id' => 8, 'created_at' => '2026-08-02 10:00:00'], 50.00);
         $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 30.00);
         // Canceled outside the range must not move the rate
@@ -214,9 +244,12 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 10.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 500.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 20.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 10.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-02 10:00:00'], 500.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-03 10:00:00'], 20.00);
+        // unpaid rows never enter the sorted set
+        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 11:00:00'], 9999.00);
+        $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 12:00:00'], 1.00);
 
         $this->assertSame('20.00 EUR', $this->fetchMedianValue());
     }
@@ -225,10 +258,10 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 10.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 20.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 30.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-04 10:00:00'], 500.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 10.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-02 10:00:00'], 20.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-03 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-04 10:00:00'], 500.00);
 
         $this->assertSame('25.00 EUR', $this->fetchMedianValue());
     }
@@ -237,8 +270,8 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-07-01 10:00:00'], 999.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-07-01 10:00:00'], 999.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 40.00);
 
         $this->assertSame('40.00 EUR', $this->fetchMedianValue());
 
@@ -261,9 +294,9 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
 
         // Sunday seeded FIRST: broken dimension ordering (SQLite silently
         // sorts by a string constant) would keep insertion order
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 30.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-03 10:00:00'], 100.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-10 12:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-02 10:00:00'], 30.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-03 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-10 12:00:00'], 50.00);
 
         $arRowList = $this->fetchRowList('weekday', ['turnover']);
 
@@ -280,9 +313,9 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 13:05:00'], 40.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 09:15:00'], 60.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-02 09:45:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 13:05:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 09:15:00'], 60.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-02 09:45:00'], 40.00);
 
         $arRowList = $this->fetchRowList('hour_of_day', ['turnover', 'orders_count']);
 
@@ -298,7 +331,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 100.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'created_at' => '2026-08-01 10:00:00'], 100.00);
         $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-02 10:00:00'], 30.00);
         $this->seedOrderWithStat(['status_id' => 4, 'created_at' => '2026-08-03 10:00:00'], 20.00);
         // Canceled outside the range must not add up
@@ -317,9 +350,9 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
             ['id' => 2, 'name' => 'DPD', 'code' => 'dpd'],
         ]);
 
-        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 60.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 40.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'shipping_type_id' => 2, 'created_at' => '2026-08-02 11:00:00'], 15.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'shipping_type_id' => 1, 'created_at' => '2026-08-01 10:00:00'], 60.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'shipping_type_id' => 1, 'created_at' => '2026-08-02 10:00:00'], 40.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'shipping_type_id' => 2, 'created_at' => '2026-08-02 11:00:00'], 15.00);
 
         $arRowMap = $this->fetchRowsByDimension('shipping_method', ['turnover']);
 
@@ -331,10 +364,10 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 2, 'created_at' => '2026-08-01 10:00:00'], 50.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 4, 'created_at' => '2026-08-02 10:00:00'], 90.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'items_quantity' => 2, 'created_at' => '2026-08-01 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'items_quantity' => 4, 'created_at' => '2026-08-02 10:00:00'], 90.00);
         // Outside the range must not count
-        $this->seedOrderWithStat(['status_id' => 1, 'items_quantity' => 99, 'created_at' => '2026-07-01 10:00:00'], 10.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'items_quantity' => 99, 'created_at' => '2026-07-01 10:00:00'], 10.00);
 
         $arTotalMap = $this->fetchMetricTotals(['avg_items_per_order', 'units_sold']);
 
@@ -346,10 +379,10 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
     {
         $this->seedBaseData();
 
-        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 1, 'created_at' => '2026-08-01 10:00:00'], 50.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-02 10:00:00'], 50.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-03 10:00:00'], 50.00);
-        $this->seedOrderWithStat(['status_id' => 1, 'is_returning' => 0, 'created_at' => '2026-08-04 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'is_returning' => 1, 'created_at' => '2026-08-01 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'is_returning' => 0, 'created_at' => '2026-08-02 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'is_returning' => 0, 'created_at' => '2026-08-03 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'is_returning' => 0, 'created_at' => '2026-08-04 10:00:00'], 50.00);
 
         $arTotalMap = $this->fetchMetricTotals(['returning_customer_share']);
 
@@ -364,7 +397,7 @@ class OrdersReportDataSourceTest extends BaseDashboardShopaholicTestCase
         $this->seedOrderWithStat(['status_id' => 3, 'hours_to_ship' => 24.0, 'created_at' => '2026-08-01 10:00:00'], 50.00);
         $this->seedOrderWithStat(['status_id' => 8, 'hours_to_ship' => 48.0, 'created_at' => '2026-08-02 10:00:00'], 50.00);
         // Not shipped yet - null must not dilute the average
-        $this->seedOrderWithStat(['status_id' => 1, 'hours_to_ship' => null, 'created_at' => '2026-08-03 10:00:00'], 50.00);
+        $this->seedOrderWithStat(['status_id' => 3, 'hours_to_ship' => null, 'created_at' => '2026-08-03 10:00:00'], 50.00);
 
         $arTotalMap = $this->fetchMetricTotals(['avg_hours_to_ship']);
 

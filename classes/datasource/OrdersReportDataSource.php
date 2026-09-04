@@ -21,12 +21,20 @@ use SystemException;
  * Shopaholic order data.
  *
  * Revenue metrics aggregate the plugin's order stat table (exact, promo
- * mechanisms included, written at order time). Profit metrics are estimated
- * live against the CURRENT value of a cost price type - they shift when the
+ * mechanisms included, written at order time). Money metrics (turnover,
+ * average and median order value, profit) count paid orders only - the stat
+ * row carries the current status, so an order enters them on its order date
+ * once it is paid, shipped or completed. Profit metrics are estimated live
+ * against the CURRENT value of a cost price type - they shift when the
  * import updates prices, and positions without a cost price contribute zero.
  */
 class OrdersReportDataSource extends ReportDataSourceBase
 {
+    /**
+     * @var int[] status ids of the paid bucket, resolved once per request
+     */
+    private array $arPaidStatusIDList;
+
     public const STATS_TABLE = 'logingrupa_dashboardshopaholic_order_stats';
     public const POSITIONS_TABLE = 'lovata_orders_shopaholic_order_positions';
     public const PRICES_TABLE = 'lovata_shopaholic_prices';
@@ -64,6 +72,8 @@ class OrdersReportDataSource extends ReportDataSourceBase
 
     public function __construct()
     {
+        $this->arPaidStatusIDList = StatusBuckets::getStatusIds(StatusBuckets::PAID);
+
         $this->registerOrderDimensions();
         $this->registerMedianIndicatorDimension();
         $this->registerRevenueMetrics();
@@ -153,15 +163,16 @@ class OrdersReportDataSource extends ReportDataSourceBase
 
         $this->registerMetric(new ReportMetric(
             self::METRIC_TURNOVER,
-            self::STATS_TABLE.'.total_price',
+            $this->makePaidOnlyExpression(self::STATS_TABLE.'.total_price', '0'),
             trans(self::LANG.'metric.turnover'),
             ReportMetric::AGGREGATE_SUM,
             $this->currencyFormatOptions()
         ));
 
+        // null for unpaid rows: AVG skips them instead of averaging in zeros
         $this->registerMetric(new ReportMetric(
             self::METRIC_AVG_ORDER_VALUE,
-            self::STATS_TABLE.'.total_price',
+            $this->makePaidOnlyExpression(self::STATS_TABLE.'.total_price', 'null'),
             trans(self::LANG.'metric.avg_order_value'),
             ReportMetric::AGGREGATE_AVG,
             $this->currencyFormatOptions()
@@ -216,6 +227,26 @@ class OrdersReportDataSource extends ReportDataSourceBase
             ReportMetric::AGGREGATE_AVG,
             ['maximumFractionDigits' => 1]
         ));
+    }
+
+    /**
+     * Wrap a money expression so only paid orders contribute; other rows
+     * yield $sElse (0 for sums, null for averages). No paid statuses
+     * configured = the metric is a constant, never silently all orders.
+     */
+    private function makePaidOnlyExpression(string $sValue, string $sElse): string
+    {
+        if (empty($this->arPaidStatusIDList)) {
+            return '('.$sElse.')';
+        }
+
+        return sprintf(
+            '(case when %s.status_id in (%s) then %s else %s end)',
+            self::STATS_TABLE,
+            implode(',', $this->arPaidStatusIDList),
+            $sValue,
+            $sElse
+        );
     }
 
     /**
@@ -357,7 +388,10 @@ class OrdersReportDataSource extends ReportDataSourceBase
             self::METRIC_PROFIT,
             $obDefaultCostType === null
                 ? '(0)'
-                : $this->makeProfitExpression((int) $obDefaultCostType->id, (bool) $obDefaultCostType->price_includes_vat),
+                : $this->makePaidOnlyExpression(
+                    $this->makeProfitExpression((int) $obDefaultCostType->id, (bool) $obDefaultCostType->price_includes_vat),
+                    '0'
+                ),
             trans(self::LANG.'metric.profit'),
             ReportMetric::AGGREGATE_SUM,
             $this->currencyFormatOptions()
@@ -366,7 +400,10 @@ class OrdersReportDataSource extends ReportDataSourceBase
         foreach ($arPriceTypeList as $obPriceType) {
             $this->registerMetric(new ReportMetric(
                 self::METRIC_PROFIT.'_'.$obPriceType->id,
-                $this->makeProfitExpression((int) $obPriceType->id, (bool) $obPriceType->price_includes_vat),
+                $this->makePaidOnlyExpression(
+                    $this->makeProfitExpression((int) $obPriceType->id, (bool) $obPriceType->price_includes_vat),
+                    '0'
+                ),
                 trans(self::LANG.'metric.profit_vs', ['name' => $obPriceType->name]),
                 ReportMetric::AGGREGATE_SUM,
                 $this->currencyFormatOptions()
@@ -406,7 +443,7 @@ class OrdersReportDataSource extends ReportDataSourceBase
     }
 
     /**
-     * Median total_price of orders in the dashboard date range. Same
+     * Median total_price of paid orders in the dashboard date range. Same
      * startOfDay/endOfDay window the metric query builder applies, so the card
      * agrees with the charts. No SQL MEDIAN exists in MySQL or SQLite - count
      * plus offset into the sorted set covers both (two middle rows averaged on
@@ -414,7 +451,8 @@ class OrdersReportDataSource extends ReportDataSourceBase
      */
     private function fetchMedianIndicatorData(ReportFetchData $obData): ReportFetchDataResult
     {
-        $obQuery = Db::table(self::STATS_TABLE);
+        $obQuery = Db::table(self::STATS_TABLE)
+            ->whereIn('status_id', $this->arPaidStatusIDList);
 
         if ($obData->dateStart !== null && $obData->dateEnd !== null) {
             $obQuery->whereBetween('ordered_at', [

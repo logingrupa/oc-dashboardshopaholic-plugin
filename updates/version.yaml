@@ -34,3 +34,5 @@
     - Legacy report widget AJAX fix - buttons inside static dashboard widgets post no _dash_definition, so the Dash widget never bound and handlers failed with "widget has not been bound"; a backend.ajax.beforeRunHandler listener recovers the dashboard from the widget alias and binds it
 1.5.6:
     - Turnover, average and median order value, canceled value now count goods only - the shipping fee is excluded from the order stat row
+1.5.7:
+    - Turnover, average and median order value and profit count paid orders only (payment received, sent, complete) - unpaid bank transfers and failed PayPal checkouts are left out; orders count, cancel rate and returning share still see every order
