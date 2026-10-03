@@ -36,3 +36,5 @@
     - Turnover, average and median order value, canceled value now count goods only - the shipping fee is excluded from the order stat row
 1.5.7:
     - Turnover, average and median order value and profit count paid orders only (payment received, sent, complete) - unpaid bank transfers and failed PayPal checkouts are left out; orders count, cancel rate and returning share still see every order
+1.5.8:
+    - Orders waiting for an online payment (status payment-pending) count as unprocessed, where the failed-payment status used to hold them

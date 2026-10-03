@@ -24,7 +24,7 @@ class StatusBuckets
 
     // paid = money metrics: payment confirmed, shipped or closed
     public const STATUS_CODE_MAP = [
-        self::UNPROCESSED => ['new', 'new-payment-received', 'new-payment-error', 'new-payment-canceled'],
+        self::UNPROCESSED => ['new', 'payment-pending', 'new-payment-received', 'new-payment-error', 'new-payment-canceled'],
         self::CANCELED => ['canceled'],
         self::SHIPPED => ['sent', 'complete'],
         self::PAID => ['new-payment-received', 'sent', 'complete'],
