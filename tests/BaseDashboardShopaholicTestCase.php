@@ -73,7 +73,15 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             $obTable->integer('shipping_type_id')->nullable();
             $obTable->integer('currency_id')->nullable();
             $obTable->integer('site_id')->nullable();
+            $obTable->integer('manager_id')->nullable();
+            $obTable->string('secret_key')->nullable();
+            $obTable->decimal('shipping_price', 15, 2)->nullable();
+            $obTable->decimal('shipping_tax_percent', 5, 2)->nullable();
             $obTable->text('property')->nullable();
+            $obTable->text('payment_data')->nullable();
+            $obTable->text('payment_response')->nullable();
+            $obTable->string('transaction_id')->nullable();
+            $obTable->string('payment_token')->nullable();
             $obTable->timestamps();
         });
 
@@ -86,6 +94,12 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             $obTable->decimal('old_price', 15, 2)->nullable();
             $obTable->integer('quantity')->nullable();
             $obTable->decimal('tax_percent', 8, 2)->nullable();
+            $obTable->string('code')->nullable();
+            $obTable->text('property')->nullable();
+            $obTable->decimal('weight', 15, 3)->nullable();
+            $obTable->decimal('height', 15, 3)->nullable();
+            $obTable->decimal('length', 15, 3)->nullable();
+            $obTable->decimal('width', 15, 3)->nullable();
             $obTable->timestamps();
         });
 
@@ -132,6 +146,7 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             $obTable->string('code')->nullable();
             $obTable->boolean('price_includes_vat')->default(false);
             $obTable->integer('sort_order')->nullable();
+            $obTable->softDeletes();
         });
 
         $this->createStubTable('lovata_shopaholic_prices', function (Blueprint $obTable) {
@@ -148,6 +163,46 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             $obTable->string('code')->nullable();
             $obTable->boolean('is_default')->default(false);
             $obTable->boolean('active')->default(true);
+            $obTable->string('symbol')->nullable();
+            $obTable->decimal('rate', 15, 4)->nullable();
+            $obTable->integer('sort_order')->nullable();
+            $obTable->softDeletes();
+        });
+
+        $this->createCheckoutStubTables();
+    }
+
+    /**
+     * Catalog tables OrderPosition::create resolves its offer item through.
+     */
+    protected function createCheckoutStubTables(): void
+    {
+        $this->createStubTable('lovata_shopaholic_offers', function (Blueprint $obTable) {
+            $obTable->increments('id');
+            $obTable->boolean('active')->default(true);
+            $obTable->integer('product_id')->nullable();
+            $obTable->string('name')->nullable();
+            $obTable->string('code')->nullable();
+            $obTable->integer('quantity')->default(0);
+            $obTable->decimal('weight', 15, 3)->nullable();
+            $obTable->decimal('height', 15, 3)->nullable();
+            $obTable->decimal('length', 15, 3)->nullable();
+            $obTable->decimal('width', 15, 3)->nullable();
+            $obTable->integer('sort_order')->nullable();
+            $obTable->softDeletes();
+            $obTable->timestamps();
+        });
+
+        $this->createStubTable('lovata_shopaholic_taxes', function (Blueprint $obTable) {
+            $obTable->increments('id');
+            $obTable->boolean('active')->default(false);
+            $obTable->boolean('is_global')->default(false);
+            $obTable->boolean('applied_to_shipping_price')->default(false);
+            $obTable->decimal('percent', 5, 2)->nullable();
+            $obTable->string('name')->nullable();
+            $obTable->integer('sort_order')->nullable();
+            $obTable->softDeletes();
+            $obTable->timestamps();
         });
     }
 
