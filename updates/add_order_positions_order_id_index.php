@@ -1,8 +1,7 @@
 <?php namespace Logingrupa\DashboardShopaholic\Updates;
 
-use October\Rain\Database\Schema\Blueprint;
+use Logingrupa\DashboardShopaholic\Classes\Helper\OrderIdIndex;
 use October\Rain\Database\Updates\Migration;
-use Schema;
 
 /**
  * The upstream order positions table ships without an order_id index; the
@@ -14,42 +13,19 @@ class AddOrderPositionsOrderIdIndex extends Migration
     public const TABLE = 'lovata_orders_shopaholic_order_positions';
     public const INDEX = 'logingrupa_dsb_positions_order_id';
 
+    /**
+     * Add the order_id index unless one already leads with order_id.
+     */
     public function up()
     {
-        if (!Schema::hasTable(self::TABLE) || $this->hasOrderIdIndex()) {
-            return;
-        }
-
-        Schema::table(self::TABLE, function (Blueprint $obTable) {
-            $obTable->index('order_id', self::INDEX);
-        });
+        OrderIdIndex::add(self::TABLE, self::INDEX);
     }
 
+    /**
+     * Drop the index this migration added.
+     */
     public function down()
     {
-        if (!Schema::hasTable(self::TABLE)) {
-            return;
-        }
-
-        foreach (Schema::getIndexes(self::TABLE) as $arIndex) {
-            if (($arIndex['name'] ?? null) === self::INDEX) {
-                Schema::table(self::TABLE, function (Blueprint $obTable) {
-                    $obTable->dropIndex(self::INDEX);
-                });
-                return;
-            }
-        }
-    }
-
-    private function hasOrderIdIndex(): bool
-    {
-        foreach (Schema::getIndexes(self::TABLE) as $arIndex) {
-            $arColumnList = $arIndex['columns'] ?? [];
-            if (($arColumnList[0] ?? null) === 'order_id') {
-                return true;
-            }
-        }
-
-        return false;
+        OrderIdIndex::drop(self::TABLE, self::INDEX);
     }
 }

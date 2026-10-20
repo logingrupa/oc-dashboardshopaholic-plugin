@@ -38,3 +38,6 @@
     - Turnover, average and median order value and profit count paid orders only (payment received, sent, complete) - unpaid bank transfers and failed PayPal checkouts are left out; orders count, cancel rate and returning share still see every order
 1.5.8:
     - Orders waiting for an online payment (status payment-pending) count as unprocessed, where the failed-payment status used to hold them
+1.5.9:
+    - order_id index on the order promo mechanism table - loading the mechanisms of one order no longer scans the whole table
+    - add_order_promo_mechanism_order_id_index.php

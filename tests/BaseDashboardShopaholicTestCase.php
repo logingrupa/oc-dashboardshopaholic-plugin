@@ -54,10 +54,12 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
         require_once __DIR__.'/../updates/create_order_stats_table.php';
         require_once __DIR__.'/../updates/add_order_positions_order_id_index.php';
         require_once __DIR__.'/../updates/add_order_stats_manager_columns.php';
+        require_once __DIR__.'/../updates/add_order_promo_mechanism_order_id_index.php';
 
         (new Logingrupa\DashboardShopaholic\Updates\CreateOrderStatsTable())->up();
         (new Logingrupa\DashboardShopaholic\Updates\AddOrderPositionsOrderIdIndex())->up();
         (new Logingrupa\DashboardShopaholic\Updates\AddOrderStatsManagerColumns())->up();
+        (new Logingrupa\DashboardShopaholic\Updates\AddOrderPromoMechanismOrderIdIndex())->up();
     }
 
     protected function createLovataStubTables(): void
@@ -84,6 +86,24 @@ abstract class BaseDashboardShopaholicTestCase extends PluginTestCase
             $obTable->decimal('old_price', 15, 2)->nullable();
             $obTable->integer('quantity')->nullable();
             $obTable->decimal('tax_percent', 8, 2)->nullable();
+            $obTable->timestamps();
+        });
+
+        $this->createStubTable('lovata_orders_shopaholic_order_promo_mechanism', function (Blueprint $obTable) {
+            $obTable->increments('id');
+            $obTable->integer('order_id');
+            $obTable->integer('mechanism_id');
+            $obTable->string('name');
+            $obTable->string('type');
+            $obTable->boolean('increase')->default(false);
+            $obTable->integer('priority');
+            $obTable->decimal('discount_value', 15, 2);
+            $obTable->string('discount_type');
+            $obTable->boolean('final_discount')->default(false);
+            $obTable->text('property')->nullable();
+            $obTable->integer('element_id')->nullable();
+            $obTable->string('element_type')->nullable();
+            $obTable->text('element_data')->nullable();
             $obTable->timestamps();
         });
 
