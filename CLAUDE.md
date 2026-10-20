@@ -15,8 +15,12 @@ Lovata.OrdersShopaholic. README.md documents the metrics.
 ## Architecture map
 
 - classes/datasource/  OrdersReportDataSource (registered with DashManager, backend only)
-- classes/event/       OrderStatHandler (order events -> order_stats fact rows)
-- classes/helper/      OrderStatWriter (writes fact rows), StatusBuckets (status -> bucket
+- classes/event/       OrderStatHandler (order events -> order_stats fact rows; a checkout
+                       order is claimed after shopaholic.order.before_create and written
+                       once on the outer TransactionCommitted, rollback clears the claim)
+- classes/helper/      OrderStatWriter (writes fact rows), OrderIdIndex (adds/drops an
+                       order_id index on an upstream table, used by both index migrations),
+                       StatusBuckets (status -> bucket
                        mapping), NewOrdersDataBuilder (widget payload), ActiveCurrency,
                        DefaultDashboardLayout (stock + legacy dashboard definitions,
                        shared by seed and period-cards migrations)
@@ -24,6 +28,7 @@ Lovata.OrdersShopaholic. README.md documents the metrics.
 - models/              OrderStat, Settings (cost price type setting, registerSettings())
 - vuecomponents/       NewOrdersList report widget (+ neworderslist partials/assets)
 - updates/             create_order_stats_table, order_positions order_id index,
+                       order_promo_mechanism order_id index (1.5.9),
                        seed_shopaholic_dashboard (seeds default dashboard layout),
                        add_price_types_vat_flag, update_dashboard_period_cards
                        (swaps stock layout to period cards, strips dead bucket widgets
