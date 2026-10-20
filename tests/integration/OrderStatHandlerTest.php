@@ -117,6 +117,22 @@ class OrderStatHandlerTest extends BaseDashboardShopaholicTestCase
         $this->assertCheckoutRow($obOrder);
     }
 
+    public function testSavepointRollbackInsideTheCheckoutKeepsTheClaim(): void
+    {
+        $obOrder = $this->openCheckout();
+        $this->addCheckoutLines($obOrder);
+
+        Db::beginTransaction();
+        Db::rollBack();
+        $this->assertSame(1, Db::transactionLevel());
+        $obOrder->save();
+        $this->assertSame(0, $this->iStatWriteCount, 'a save inside the checkout still writes nothing');
+
+        Db::commit();
+        $this->assertSame(1, $this->iStatWriteCount, 'one write at the outer commit');
+        $this->assertCheckoutRow($obOrder);
+    }
+
     public function testBackendOrderAndPositionEditsWriteOnEverySave(): void
     {
         $obOrder = $this->createBackendOrder();

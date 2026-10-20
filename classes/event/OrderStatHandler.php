@@ -20,7 +20,7 @@ use Throwable;
  *   like any other save
  * - Order afterSave: status changes and backend edits
  * - OrderPosition afterSave/afterDelete: backend position edits
- * - TransactionRolledBack clears the pending flag and every claim
+ * - The outermost TransactionRolledBack clears the pending flag and every claim
  *
  * Known gap: editing promo mechanism rows directly in the DB does not retrigger
  * a write; run dashboardshopaholic:backfill after manual surgery.
@@ -53,8 +53,8 @@ class OrderStatHandler
             $this->writeClaimedOrders($obCommitted);
         });
 
-        $obEvent->listen(TransactionRolledBack::class, function (): void {
-            $this->reset();
+        $obEvent->listen(TransactionRolledBack::class, function (TransactionRolledBack $obRolledBack): void {
+            $this->resetOnOuterRollback($obRolledBack);
         });
 
         Order::extend(function (Order $obOrder): void {
@@ -146,6 +146,19 @@ class OrderStatHandler
         $this->reset();
 
         return $arOrderList;
+    }
+
+    /**
+     * Drop the claims once the outermost transaction rolled back; a savepoint
+     * rollback fires the same event and keeps them.
+     */
+    private function resetOnOuterRollback(TransactionRolledBack $obRolledBack): void
+    {
+        if ($obRolledBack->connection->transactionLevel() !== 0) {
+            return;
+        }
+
+        $this->reset();
     }
 
     /**
