@@ -47,8 +47,8 @@ class OrderIdIndex
     private static function hasOrderIdIndex(string $sTableName): bool
     {
         foreach (Schema::getIndexes($sTableName) as $arIndex) {
-            $arColumnList = $arIndex['columns'] ?? [];
-            if (($arColumnList[0] ?? null) === 'order_id') {
+            $arColumnList = is_array($arIndex) ? ($arIndex['columns'] ?? []) : [];
+            if (is_array($arColumnList) && ($arColumnList[0] ?? null) === 'order_id') {
                 return true;
             }
         }
@@ -62,7 +62,7 @@ class OrderIdIndex
     private static function hasIndexNamed(string $sTableName, string $sIndexName): bool
     {
         foreach (Schema::getIndexes($sTableName) as $arIndex) {
-            if (($arIndex['name'] ?? null) === $sIndexName) {
+            if (is_array($arIndex) && ($arIndex['name'] ?? null) === $sIndexName) {
                 return true;
             }
         }

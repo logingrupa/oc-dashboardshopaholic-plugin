@@ -2,10 +2,10 @@
 
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB as Db;
-use Illuminate\Support\Facades\Event;
 use Lovata\OrdersShopaholic\Classes\Processor\OrderProcessor;
 use Lovata\OrdersShopaholic\Models\Order;
 use Lovata\OrdersShopaholic\Models\OrderPosition;
+use October\Rain\Support\Facades\Event;
 
 /**
  * OrderStatHandler against real Order and OrderPosition model events. The
@@ -59,13 +59,16 @@ class OrderStatHandlerTest extends BaseDashboardShopaholicTestCase
 
     public function testRowSurvivesAThrowingOrderCreatedListener(): void
     {
+        // priority above the plugin listeners, so no order created listener of ours runs;
+        // only the October facade (events.priority) honours the priority argument
         Event::listen(OrderProcessor::EVENT_ORDER_CREATED, function (): void {
             throw new RuntimeException('mail transport down');
-        });
+        }, 100);
         $obOrder = $this->openCheckout();
         $this->addCheckoutLines($obOrder);
         Db::commit();
         $obOrder->save();
+        $iWriteCountBefore = $this->iStatWriteCount;
 
         try {
             Event::fire(OrderProcessor::EVENT_ORDER_CREATED, $obOrder);
@@ -74,6 +77,7 @@ class OrderStatHandlerTest extends BaseDashboardShopaholicTestCase
             $this->assertSame('mail transport down', $obException->getMessage());
         }
 
+        $this->assertSame($iWriteCountBefore, $this->iStatWriteCount, 'the event wrote nothing');
         $this->assertCheckoutRow($obOrder);
     }
 
