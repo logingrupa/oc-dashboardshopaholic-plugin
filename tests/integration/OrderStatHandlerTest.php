@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Events\TransactionCommitting;
 use Illuminate\Support\Facades\DB as Db;
 use Lovata\OrdersShopaholic\Classes\Processor\OrderProcessor;
 use Lovata\OrdersShopaholic\Models\Order;
@@ -114,6 +115,21 @@ class OrderStatHandlerTest extends BaseDashboardShopaholicTestCase
 
         Db::commit();
         $this->assertSame(1, $this->iStatWriteCount);
+        $this->assertCheckoutRow($obOrder);
+    }
+
+    public function testWritesInsideTheCommittingStepStillWriteOnceAtCommit(): void
+    {
+        // storeextender records the order on the cart and clears it at TransactionCommitting
+        $obOrder = $this->openCheckout();
+        $this->addCheckoutLines($obOrder);
+        Event::listen(TransactionCommitting::class, function () use ($obOrder): void {
+            $obOrder->save();
+        });
+
+        Db::commit();
+
+        $this->assertSame(1, $this->iStatWriteCount, 'one write at the outer commit');
         $this->assertCheckoutRow($obOrder);
     }
 
